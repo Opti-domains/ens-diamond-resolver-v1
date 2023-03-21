@@ -1,0 +1,5 @@
+[
+  "error Proxy__ImplementationIsNotContract()",
+  "function getFallbackAddress() view returns (address)",
+  "function setFallbackAddress(address)"
+]

@@ -1,0 +1,9 @@
+[
+  "event ApprovalForAll(address indexed,address indexed,bool)",
+  "event Approved(address,bytes32 indexed,address indexed,bool indexed)",
+  "event SetNameWrapper(address indexed)",
+  "event SetWhitelisted(address indexed,bool)",
+  "event VersionChanged(bytes32 indexed,uint64)",
+  "function clearRecords(bytes32)",
+  "function recordVersions(bytes32) view returns (uint64)"
+]

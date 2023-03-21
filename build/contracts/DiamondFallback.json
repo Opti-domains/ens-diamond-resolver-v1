@@ -1,0 +1,8 @@
+[
+  "error Ownable__NotOwner()",
+  "error Ownable__NotTransitiveOwner()",
+  "error Proxy__ImplementationIsNotContract()",
+  "event OwnershipTransferred(address indexed,address indexed)",
+  "function getFallbackAddress() view returns (address)",
+  "function setFallbackAddress(address)"
+]
