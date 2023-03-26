@@ -32,7 +32,7 @@ abstract contract InterfaceResolver is IInterfaceResolver, AddrResolver {
         bytes32 node,
         bytes4 interfaceID,
         address implementer
-    ) external virtual authorised(node) {
+    ) external virtual whitelisted(node) {
         InterfaceResolverStorage.Layout storage l = InterfaceResolverStorage.layout();
         l.versionable_interfaces[recordVersions(node)][node][
             interfaceID

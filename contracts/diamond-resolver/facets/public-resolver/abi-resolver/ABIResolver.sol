@@ -34,7 +34,7 @@ abstract contract ABIResolver is IABIResolver, DiamondResolverUtil, IERC165 {
         bytes32 node,
         uint256 contentType,
         bytes calldata data
-    ) external virtual authorised(node) {
+    ) external virtual whitelisted(node) {
         // Content types must be powers of 2
         require(((contentType - 1) & contentType) == 0);
 

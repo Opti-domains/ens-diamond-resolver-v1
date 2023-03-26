@@ -30,7 +30,7 @@ abstract contract NameResolver is INameResolver, DiamondResolverUtil, IERC165 {
     function setName(
         bytes32 node,
         string calldata newName
-    ) external virtual authorised(node) {
+    ) external virtual whitelisted(node) {
         NameResolverStorage.Layout storage l = NameResolverStorage.layout();
         l.versionable_names[recordVersions(node)][node] = newName;
         emit NameChanged(node, newName);

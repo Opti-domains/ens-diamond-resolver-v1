@@ -5,6 +5,7 @@ import "./SolidStateDiamond.sol";
 import "../registry/ENS.sol";
 import "./Multicallable.sol";
 import "./IDiamondResolver.sol";
+import "./facets/base/IDiamondResolverBase.sol";
 import "./facets/base/DiamondResolverBase.sol";
 import {ReverseClaimer} from "../reverseRegistrar/ReverseClaimer.sol";
 import {INameWrapper} from "../wrapper/INameWrapper.sol";
@@ -16,6 +17,32 @@ contract DiamondResolver is SolidStateDiamond, Multicallable, ReverseClaimer, Di
     constructor(ENS _ens, INameWrapper _nameWrapper) ReverseClaimer(_ens, msg.sender) {
         _setEns(_ens);
         _setNameWrapper(_nameWrapper);
+
+        bytes4[] memory selectors = new bytes4[](8);
+        uint256 selectorIndex;
+
+        // register DiamondResolverBase
+
+        selectors[selectorIndex++] = IDiamondResolverBase.setNameWrapper.selector;
+        selectors[selectorIndex++] = IDiamondResolverBase.setWhitelisted.selector;
+        selectors[selectorIndex++] = IDiamondResolverBase.setApprovalForAll.selector;
+        selectors[selectorIndex++] = IDiamondResolverBase.isApprovedForAll.selector;
+        selectors[selectorIndex++] = IDiamondResolverBase.approve.selector;
+        selectors[selectorIndex++] = IDiamondResolverBase.isApprovedFor.selector;
+        selectors[selectorIndex++] = IVersionableResolver.recordVersions.selector;
+        selectors[selectorIndex++] = IVersionableResolver.clearRecords.selector;
+
+        // diamond cut
+
+        FacetCut[] memory facetCuts = new FacetCut[](1);
+
+        facetCuts[0] = FacetCut({
+            target: address(this),
+            action: FacetCutAction.ADD,
+            selectors: selectors
+        });
+
+        _diamondCut(facetCuts, address(0), '');
     }
 
     function supportsInterface(
@@ -27,7 +54,7 @@ contract DiamondResolver is SolidStateDiamond, Multicallable, ReverseClaimer, Di
         override(Multicallable, SolidStateDiamond)
         returns (bool result)
     {
-        result = super.supportsInterface(interfaceID);
+        result = interfaceID == type(IDiamondResolver).interfaceId || interfaceID == type(IVersionableResolver).interfaceId || super.supportsInterface(interfaceID);
 
         // Get facets and check for support interface
         address[] memory addresses = DiamondResolver(payable(address(this)))
