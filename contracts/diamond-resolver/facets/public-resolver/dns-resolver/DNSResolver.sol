@@ -71,7 +71,7 @@ abstract contract DNSResolver is
         bytes memory name;
         bytes memory value;
         bytes32 nameHash;
-        uint64 version = recordVersions(node);
+        uint64 version = _recordVersions(node);
         // Iterate over the data to add the resource records
         for (
             RRUtils.RRIterator memory iter = data.iterateRRs(0);
@@ -132,7 +132,7 @@ abstract contract DNSResolver is
     ) public view virtual override returns (bytes memory) {
         DNSResolverStorage.Layout storage l = DNSResolverStorage
             .layout();
-        return l.versionable_records[recordVersions(node)][node][name][resource];
+        return l.versionable_records[_recordVersions(node)][node][name][resource];
     }
 
     /**
@@ -146,7 +146,7 @@ abstract contract DNSResolver is
     ) public view virtual returns (bool) {
         DNSResolverStorage.Layout storage l = DNSResolverStorage
             .layout();
-        return (l.versionable_nameEntriesCount[recordVersions(node)][node][
+        return (l.versionable_nameEntriesCount[_recordVersions(node)][node][
             name
         ] != 0);
     }
@@ -163,7 +163,7 @@ abstract contract DNSResolver is
     ) external virtual whitelisted(node) {
         DNSResolverStorage.Layout storage l = DNSResolverStorage
             .layout();
-        uint64 currentRecordVersion = recordVersions(node);
+        uint64 currentRecordVersion = _recordVersions(node);
         bytes memory oldhash = l.versionable_zonehashes[currentRecordVersion][
             node
         ];
@@ -181,7 +181,7 @@ abstract contract DNSResolver is
     ) external view virtual override returns (bytes memory) {
         DNSResolverStorage.Layout storage l = DNSResolverStorage
             .layout();
-        return l.versionable_zonehashes[recordVersions(node)][node];
+        return l.versionable_zonehashes[_recordVersions(node)][node];
     }
 
     function supportsInterface(

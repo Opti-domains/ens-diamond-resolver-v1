@@ -35,7 +35,7 @@ abstract contract TextResolver is ITextResolver, DiamondResolverUtil, IERC165 {
         string calldata value
     ) external virtual whitelisted(node) {
         TextResolverStorage.Layout storage l = TextResolverStorage.layout();
-        l.versionable_texts[recordVersions(node)][node][key] = value;
+        l.versionable_texts[_recordVersions(node)][node][key] = value;
         emit TextChanged(node, key, key, value);
     }
 
@@ -50,7 +50,7 @@ abstract contract TextResolver is ITextResolver, DiamondResolverUtil, IERC165 {
         string calldata key
     ) external view virtual override returns (string memory) {
         TextResolverStorage.Layout storage l = TextResolverStorage.layout();
-        return l.versionable_texts[recordVersions(node)][node][key];
+        return l.versionable_texts[_recordVersions(node)][node][key];
     }
 
     function supportsInterface(

@@ -34,7 +34,7 @@ abstract contract ContentHashResolver is IContentHashResolver, DiamondResolverUt
     ) external virtual whitelisted(node) {
         ContentHashResolverStorage.Layout storage l = ContentHashResolverStorage
             .layout();
-        l.versionable_hashes[recordVersions(node)][node] = hash;
+        l.versionable_hashes[_recordVersions(node)][node] = hash;
         emit ContenthashChanged(node, hash);
     }
 
@@ -48,7 +48,7 @@ abstract contract ContentHashResolver is IContentHashResolver, DiamondResolverUt
     ) external view virtual override returns (bytes memory) {
         ContentHashResolverStorage.Layout storage l = ContentHashResolverStorage
             .layout();
-        return l.versionable_hashes[recordVersions(node)][node];
+        return l.versionable_hashes[_recordVersions(node)][node];
     }
 
     function supportsInterface(

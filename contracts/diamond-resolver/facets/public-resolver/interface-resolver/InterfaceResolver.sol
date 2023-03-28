@@ -34,7 +34,7 @@ abstract contract InterfaceResolver is IInterfaceResolver, AddrResolver {
         address implementer
     ) external virtual whitelisted(node) {
         InterfaceResolverStorage.Layout storage l = InterfaceResolverStorage.layout();
-        l.versionable_interfaces[recordVersions(node)][node][
+        l.versionable_interfaces[_recordVersions(node)][node][
             interfaceID
         ] = implementer;
         emit InterfaceChanged(node, interfaceID, implementer);
@@ -55,7 +55,7 @@ abstract contract InterfaceResolver is IInterfaceResolver, AddrResolver {
         bytes4 interfaceID
     ) external view virtual override returns (address) {
         InterfaceResolverStorage.Layout storage l = InterfaceResolverStorage.layout();
-        address implementer = l.versionable_interfaces[recordVersions(node)][
+        address implementer = l.versionable_interfaces[_recordVersions(node)][
             node
         ][interfaceID];
         if (implementer != address(0)) {

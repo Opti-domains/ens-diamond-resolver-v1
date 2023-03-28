@@ -21,8 +21,18 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
   }
 
-  const resolver = await deploy('DiamondResolver', deployArgs)
-  if (!resolver.newlyDeployed) return
+  const resolverDeployment = await deploy('DiamondResolver', deployArgs)
+  if (!resolverDeployment.newlyDeployed) return
 
-  
+  const resolver = await ethers.getContract('DiamondResolver', owner)
+
+  // Whitelist controller and reverseRegistrar
+  await (await resolver.setWhitelisted(controller.address, true)).wait()
+  await (await resolver.setWhitelisted(reverseRegistrar.address, true)).wait()
 }
+
+func.id = 'diamond-resolver'
+func.tags = ['DiamondResolver']
+func.dependencies = []
+
+export default func

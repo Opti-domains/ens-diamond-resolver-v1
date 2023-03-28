@@ -5,8 +5,10 @@ pragma solidity ^0.8.8;
 import "./DiamondResolverBaseStorage.sol";
 import "./IVersionableResolver.sol";
 
-abstract contract DiamondResolverUtil is IVersionableResolver {
-    function recordVersions(bytes32 node) public view returns (uint64) {
+abstract contract DiamondResolverUtil {
+    event VersionChanged(bytes32 indexed node, uint64 newVersion);
+
+    function _recordVersions(bytes32 node) internal view returns (uint64) {
         DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage
             .layout();
         return l.recordVersions[node];
@@ -17,7 +19,7 @@ abstract contract DiamondResolverUtil is IVersionableResolver {
      * May only be called by the owner of that node in the ENS registry.
      * @param node The node to update.
      */
-    function clearRecords(bytes32 node) public virtual authorised(node) {
+    function _clearRecords(bytes32 node) internal virtual {
         DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage
             .layout();
         l.recordVersions[node]++;

@@ -1,5 +1,4 @@
 [
-  "event VersionChanged(bytes32 indexed,uint64)",
   "function approve(bytes32,address,bool)",
   "function clearRecords(bytes32)",
   "function isApprovedFor(address,bytes32,address) view returns (bool)",

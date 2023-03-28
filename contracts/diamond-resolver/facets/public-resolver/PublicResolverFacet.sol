@@ -6,7 +6,6 @@ import "./abi-resolver/ABIResolver.sol";
 import "./addr-resolver/AddrResolver.sol";
 import "./content-hash-resolver/ContentHashResolver.sol";
 import "./dns-resolver/DNSResolver.sol";
-import "./extended-resolver/ExtendedResolver.sol";
 import "./interface-resolver/InterfaceResolver.sol";
 import "./name-resolver/NameResolver.sol";
 import "./pubkey-resolver/PubkeyResolver.sol";

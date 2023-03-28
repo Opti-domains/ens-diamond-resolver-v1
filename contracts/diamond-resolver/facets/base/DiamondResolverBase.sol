@@ -57,7 +57,29 @@ abstract contract DiamondResolverBase is
         return _isApprovedFor(owner, node, delegate);
     }
 
+    function recordVersions(bytes32 node) public view returns (uint64) {
+        return _recordVersions(node);
+    }
+
+    /**
+     * Increments the record version associated with an ENS node.
+     * May only be called by the owner of that node in the ENS registry.
+     * @param node The node to update.
+     */
+    function clearRecords(bytes32 node) public virtual whitelisted(node) {
+        _clearRecords(node);
+    }
+
     function setSupportsInterface(bytes4 interfaceId, bool status) public baseOnlyOwner {
         _setSupportsInterface(interfaceId, status);
+    }
+
+    function setMultiSupportsInterface(bytes4[] memory interfaceId, bool status) public baseOnlyOwner {
+        unchecked {
+            uint length = interfaceId.length;
+            for (uint i; i < length; ++i) {
+                _setSupportsInterface(interfaceId[i], status);
+            }
+        }
     }
 }

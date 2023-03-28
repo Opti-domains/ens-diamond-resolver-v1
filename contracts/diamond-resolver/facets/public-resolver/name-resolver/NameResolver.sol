@@ -32,7 +32,7 @@ abstract contract NameResolver is INameResolver, DiamondResolverUtil, IERC165 {
         string calldata newName
     ) external virtual whitelisted(node) {
         NameResolverStorage.Layout storage l = NameResolverStorage.layout();
-        l.versionable_names[recordVersions(node)][node] = newName;
+        l.versionable_names[_recordVersions(node)][node] = newName;
         emit NameChanged(node, newName);
     }
 
@@ -46,7 +46,7 @@ abstract contract NameResolver is INameResolver, DiamondResolverUtil, IERC165 {
         bytes32 node
     ) external view virtual override returns (string memory) {
         NameResolverStorage.Layout storage l = NameResolverStorage.layout();
-        return l.versionable_names[recordVersions(node)][node];
+        return l.versionable_names[_recordVersions(node)][node];
     }
 
     function supportsInterface(

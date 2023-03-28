@@ -69,7 +69,7 @@ abstract contract AddrResolver is
         if (coinType == COIN_TYPE_ETH) {
             emit AddrChanged(node, bytesToAddress(a));
         }
-        l.versionable_addresses[recordVersions(node)][node][coinType] = a;
+        l.versionable_addresses[_recordVersions(node)][node][coinType] = a;
     }
 
     function addr(
@@ -78,7 +78,7 @@ abstract contract AddrResolver is
     ) public view virtual override returns (bytes memory) {
         AddrResolverStorage.Layout storage l = AddrResolverStorage
             .layout();
-        return l.versionable_addresses[recordVersions(node)][node][coinType];
+        return l.versionable_addresses[_recordVersions(node)][node][coinType];
     }
 
     function supportsInterface(

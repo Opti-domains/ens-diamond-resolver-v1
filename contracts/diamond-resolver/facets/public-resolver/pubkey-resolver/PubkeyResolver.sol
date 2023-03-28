@@ -39,7 +39,7 @@ abstract contract PubkeyResolver is IPubkeyResolver, DiamondResolverUtil, IERC16
         bytes32 y
     ) external virtual whitelisted(node) {
         PubkeyResolverStorage.Layout storage l = PubkeyResolverStorage.layout();
-        l.versionable_pubkeys[recordVersions(node)][node] = PubkeyResolverStorage.PublicKey(x, y);
+        l.versionable_pubkeys[_recordVersions(node)][node] = PubkeyResolverStorage.PublicKey(x, y);
         emit PubkeyChanged(node, x, y);
     }
 
@@ -54,7 +54,7 @@ abstract contract PubkeyResolver is IPubkeyResolver, DiamondResolverUtil, IERC16
         bytes32 node
     ) external view virtual override returns (bytes32 x, bytes32 y) {
         PubkeyResolverStorage.Layout storage l = PubkeyResolverStorage.layout();
-        uint64 currentRecordVersion = recordVersions(node);
+        uint64 currentRecordVersion = _recordVersions(node);
         return (
             l.versionable_pubkeys[currentRecordVersion][node].x,
             l.versionable_pubkeys[currentRecordVersion][node].y

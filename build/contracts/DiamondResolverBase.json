@@ -1,4 +1,5 @@
 [
+  "error ERC165Base__InvalidInterfaceId()",
   "error Ownable__NotOwner()",
   "event ApprovalForAll(address indexed,address indexed,bool)",
   "event Approved(address,bytes32 indexed,address indexed,bool indexed)",
@@ -11,6 +12,8 @@
   "function isApprovedForAll(address,address) view returns (bool)",
   "function recordVersions(bytes32) view returns (uint64)",
   "function setApprovalForAll(address,bool)",
+  "function setMultiSupportsInterface(bytes4[],bool)",
   "function setNameWrapper(address)",
+  "function setSupportsInterface(bytes4,bool)",
   "function setWhitelisted(address,bool)"
 ]

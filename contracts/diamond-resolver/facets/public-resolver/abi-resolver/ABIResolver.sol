@@ -40,7 +40,7 @@ abstract contract ABIResolver is IABIResolver, DiamondResolverUtil, IERC165 {
 
         ABIResolverStorage.Layout storage l = ABIResolverStorage
             .layout();
-        l.versionable_abis[recordVersions(node)][node][contentType] = data;
+        l.versionable_abis[_recordVersions(node)][node][contentType] = data;
         emit ABIChanged(node, contentType);
     }
 
@@ -59,7 +59,7 @@ abstract contract ABIResolver is IABIResolver, DiamondResolverUtil, IERC165 {
         ABIResolverStorage.Layout storage l = ABIResolverStorage
             .layout();
         mapping(uint256 => bytes) storage abiset = l.versionable_abis[
-            recordVersions(node)
+            _recordVersions(node)
         ][node];
 
         for (

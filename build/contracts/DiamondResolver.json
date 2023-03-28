@@ -8,6 +8,7 @@
   "error DiamondWritable__SelectorNotFound()",
   "error DiamondWritable__SelectorNotSpecified()",
   "error DiamondWritable__TargetHasNoCode()",
+  "error ERC165Base__InvalidInterfaceId()",
   "error Ownable__NotOwner()",
   "error Ownable__NotOwner()",
   "error Ownable__NotTransitiveOwner()",
@@ -38,8 +39,11 @@
   "function recordVersions(bytes32) view returns (uint64)",
   "function setApprovalForAll(address,bool)",
   "function setFallbackAddress(address)",
+  "function setMultiSupportsInterface(bytes4[],bool)",
   "function setNameWrapper(address)",
+  "function setSupportsInterface(bytes4,bool)",
   "function setWhitelisted(address,bool)",
   "function supportsInterface(bytes4) view returns (bool)",
+  "function supportsInterfaceUnoptimized(bytes4) view returns (bool)",
   "function transferOwnership(address)"
 ]
