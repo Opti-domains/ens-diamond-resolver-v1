@@ -76,7 +76,7 @@ abstract contract DiamondResolverUtil is IVersionableResolver {
         _;
     }
 
-    modifier authorisedOrWhitelisted(bytes32 node) {
+    modifier whitelisted(bytes32 node) {
         require(_isAuthorisedOrWhitelisted(node));
         _;
     }

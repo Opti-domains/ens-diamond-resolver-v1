@@ -33,7 +33,7 @@ abstract contract TextResolver is ITextResolver, DiamondResolverUtil, IERC165 {
         bytes32 node,
         string calldata key,
         string calldata value
-    ) external virtual authorised(node) {
+    ) external virtual whitelisted(node) {
         TextResolverStorage.Layout storage l = TextResolverStorage.layout();
         l.versionable_texts[recordVersions(node)][node][key] = value;
         emit TextChanged(node, key, key, value);

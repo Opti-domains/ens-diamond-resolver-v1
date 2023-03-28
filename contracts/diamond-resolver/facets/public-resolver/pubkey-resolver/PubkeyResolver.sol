@@ -37,7 +37,7 @@ abstract contract PubkeyResolver is IPubkeyResolver, DiamondResolverUtil, IERC16
         bytes32 node,
         bytes32 x,
         bytes32 y
-    ) external virtual authorised(node) {
+    ) external virtual whitelisted(node) {
         PubkeyResolverStorage.Layout storage l = PubkeyResolverStorage.layout();
         l.versionable_pubkeys[recordVersions(node)][node] = PubkeyResolverStorage.PublicKey(x, y);
         emit PubkeyChanged(node, x, y);
