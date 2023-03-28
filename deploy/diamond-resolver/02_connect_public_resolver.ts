@@ -7,34 +7,33 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments
   const { deployer, owner } = await getNamedAccounts()
 
+  const ownerSigner = await ethers.getSigner(owner)
+
   const diamondResolver = await ethers.getContract('DiamondResolver', owner)
   const publicResolver = await ethers.getContract('PublicResolver', owner)
 
   const selectors = [
-    ethers.utils.id("ABI(bytes32,uint256)"),
-    ethers.utils.id("addr(bytes32)"),
-    ethers.utils.id("addr(bytes32,uint256)"),
-    ethers.utils.id("clearRecords(bytes32)"),
-    ethers.utils.id("contenthash(bytes32)"),
-    ethers.utils.id("dnsRecord(bytes32,bytes32,uint16)"),
-    ethers.utils.id("hasDNSRecords(bytes32,bytes32)"),
-    ethers.utils.id("interfaceImplementer(bytes32,bytes4)"),
-    ethers.utils.id("name(bytes32)"),
-    ethers.utils.id("pubkey(bytes32)"),
-    ethers.utils.id("recordVersions(bytes32)"),
-    ethers.utils.id("setABI(bytes32,uint256,bytes)"),
-    ethers.utils.id("setAddr(bytes32,uint256,bytes)"),
-    ethers.utils.id("setAddr(bytes32,address)"),
-    ethers.utils.id("setContenthash(bytes32,bytes)"),
-    ethers.utils.id("setDNSRecords(bytes32,bytes)"),
-    ethers.utils.id("setInterface(bytes32,bytes4,address)"),
-    ethers.utils.id("setName(bytes32,string)"),
-    ethers.utils.id("setPubkey(bytes32,bytes32,bytes32)"),
-    ethers.utils.id("setText(bytes32,string,string)"),
-    ethers.utils.id("setZonehash(bytes32,bytes)"),
-    ethers.utils.id("text(bytes32,string)"),
-    ethers.utils.id("zonehash(bytes32)"),
-    ethers.utils.id('setABI(node,data)'),
+    ethers.utils.id("ABI(bytes32,uint256)").substring(0, 10),
+    ethers.utils.id("addr(bytes32)").substring(0, 10),
+    ethers.utils.id("addr(bytes32,uint256)").substring(0, 10),
+    ethers.utils.id("contenthash(bytes32)").substring(0, 10),
+    ethers.utils.id("dnsRecord(bytes32,bytes32,uint16)").substring(0, 10),
+    ethers.utils.id("hasDNSRecords(bytes32,bytes32)").substring(0, 10),
+    ethers.utils.id("interfaceImplementer(bytes32,bytes4)").substring(0, 10),
+    ethers.utils.id("name(bytes32)").substring(0, 10),
+    ethers.utils.id("pubkey(bytes32)").substring(0, 10),
+    ethers.utils.id("setABI(bytes32,uint256,bytes)").substring(0, 10),
+    ethers.utils.id("setAddr(bytes32,uint256,bytes)").substring(0, 10),
+    ethers.utils.id("setAddr(bytes32,address)").substring(0, 10),
+    ethers.utils.id("setContenthash(bytes32,bytes)").substring(0, 10),
+    ethers.utils.id("setDNSRecords(bytes32,bytes)").substring(0, 10),
+    ethers.utils.id("setInterface(bytes32,bytes4,address)").substring(0, 10),
+    ethers.utils.id("setName(bytes32,string)").substring(0, 10),
+    ethers.utils.id("setPubkey(bytes32,bytes32,bytes32)").substring(0, 10),
+    ethers.utils.id("setText(bytes32,string,string)").substring(0, 10),
+    ethers.utils.id("setZonehash(bytes32,bytes)").substring(0, 10),
+    ethers.utils.id("text(bytes32,string)").substring(0, 10),
+    ethers.utils.id("zonehash(bytes32)").substring(0, 10),
   ]
 
   const facetCut = {
@@ -56,16 +55,25 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     "0x59d1d43c", // ITextResolver
   ]
 
-  await diamondResolver.diamondCut(
-    [facetCut], 
+  console.log(selectors)
+
+  // const facetCutParsed = ethers.utils.AbiCoder.prototype.encode(
+  //   ['address', 'uint', 'bytes4[]'],
+  //   [facetCut.target, facetCut.action, []]
+  // );
+
+  await diamondResolver.connect(ownerSigner).diamondCut(
+    [facetCut],
+    // "0x0000000000000000000000000000000000000000",
     diamondResolver.address, 
+    // "0x",
     diamondResolver.interface.encodeFunctionData(
       "setMultiSupportsInterface",
       [
         supportInterfaces,
         true,
       ]
-    )
+    ),
   )
 }
 
