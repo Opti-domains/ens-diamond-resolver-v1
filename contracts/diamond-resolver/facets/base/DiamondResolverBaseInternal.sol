@@ -7,6 +7,7 @@ import "./DiamondResolverBaseStorage.sol";
 import "./DiamondResolverUtil.sol";
 
 error Ownable__NotOwner();
+error ERC165Base__InvalidInterfaceId();
 
 abstract contract DiamondResolverBaseInternal is DiamondResolverUtil {
     // This is done to prevent conflict

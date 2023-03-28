@@ -2,12 +2,14 @@
 
 pragma solidity ^0.8.8;
 
+import {ERC165BaseInternal} from "@solidstate/contracts/introspection/ERC165/base/ERC165BaseInternal.sol";
 import "./DiamondResolverBaseInternal.sol";
 import "./IDiamondResolverBase.sol";
 
 abstract contract DiamondResolverBase is
     IDiamondResolverBase,
-    DiamondResolverBaseInternal
+    DiamondResolverBaseInternal,
+    ERC165BaseInternal
 {
     function setNameWrapper(INameWrapper nameWrapper) external baseOnlyOwner {
         _setNameWrapper(nameWrapper);
@@ -53,5 +55,9 @@ abstract contract DiamondResolverBase is
         address delegate
     ) public view returns (bool) {
         return _isApprovedFor(owner, node, delegate);
+    }
+
+    function setSupportsInterface(bytes4 interfaceId, bool status) public baseOnlyOwner {
+        _setSupportsInterface(interfaceId, status);
     }
 }

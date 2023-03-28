@@ -27,6 +27,17 @@ contract DiamondResolver is SolidStateDiamond, Multicallable, ReverseClaimer, Di
         override(Multicallable, SolidStateDiamond)
         returns (bool result)
     {
+        result = super.supportsInterface(interfaceID) || _supportsInterface(interfaceID);
+    }
+
+    function supportsInterfaceUnoptimized(
+        bytes4 interfaceID
+    )
+        public
+        view
+        virtual
+        returns (bool result)
+    {
         result = super.supportsInterface(interfaceID);
 
         // Get facets and check for support interface

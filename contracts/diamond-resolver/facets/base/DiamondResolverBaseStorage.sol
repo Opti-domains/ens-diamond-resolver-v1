@@ -36,6 +36,8 @@ library DiamondResolverBaseStorage {
         mapping(address => mapping(bytes32 => mapping(address => bool))) tokenApprovals;
 
         mapping(bytes32 => uint64) recordVersions;
+
+        mapping(address => bool) supportsInterface;
     }
 
     bytes32 internal constant STORAGE_SLOT =
