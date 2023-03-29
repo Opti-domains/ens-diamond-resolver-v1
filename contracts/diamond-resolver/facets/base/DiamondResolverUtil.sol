@@ -30,7 +30,7 @@ abstract contract DiamondResolverUtil {
 
     function _isAuthorised(bytes32 node) internal view returns (bool) {
         (bool success, bytes memory result) = address(this).staticcall(
-            abi.encodeWithSelector(0x6404a386, node)
+            abi.encodeWithSelector(0x25f36704, msg.sender, node)
         );
         if (!success) return false;
         return abi.decode(result, (bool));

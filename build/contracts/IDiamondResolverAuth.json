@@ -1,3 +1,3 @@
 [
-  "function isAuthorised(bytes32) view returns (bool)"
+  "function isAuthorised(address,bytes32) view returns (bool)"
 ]

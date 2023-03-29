@@ -26,8 +26,8 @@ library RegistryWhitelistAuthStorage {
 contract RegistryWhitelistAuthFacet is RegistryAuthFacet {
     event SetWhitelisted(address indexed operator, bool approved);
 
-    function isAuthorised(bytes32 node) public virtual override view returns (bool) {
-        return super.isAuthorised(node) || RegistryWhitelistAuthStorage.layout().whitelisted[msg.sender];
+    function isAuthorised(address sender, bytes32 node) public virtual override view returns (bool) {
+        return super.isAuthorised(sender, node) || RegistryWhitelistAuthStorage.layout().whitelisted[sender];
     }
 
     function setWhitelisted(address operator, bool approved) public baseOnlyOwner {

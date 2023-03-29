@@ -16,13 +16,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   const deployment = await deploy('RegistryWhitelistAuthFacet', deployArgs)
-  if (!deployment.newlyDeployed) return
+  // if (!deployment.newlyDeployed) return
 
   const diamondResolver = await ethers.getContract('DiamondResolver', owner)
   const auth = await ethers.getContract('RegistryWhitelistAuthFacet', owner)
 
   const selectors = [
-    ethers.utils.id("isAuthorised(bytes32)").substring(0, 10),
+    ethers.utils.id("isAuthorised(address,bytes32)").substring(0, 10),
     ethers.utils.id("setWhitelisted(address,bool)").substring(0, 10),
   ]
 
@@ -33,7 +33,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   const supportInterfaces = [
-    "0x6404a386", // IDiamondResolverAuth
+    "0x25f36704", // IDiamondResolverAuth
   ]
 
   const tx1 = await diamondResolver.connect(ownerSigner).diamondCut(
@@ -56,8 +56,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const controller = await ethers.getContract('ETHRegistrarController', owner)
   const reverseRegistrar = await ethers.getContract('ReverseRegistrar', owner)
 
-  await (await diamondResolver.setWhitelisted(controller.address, true)).wait()
-  await (await diamondResolver.setWhitelisted(reverseRegistrar.address, true)).wait()
+  const RegistryWhitelistAuthFacet = await ethers.getContractFactory("RegistryWhitelistAuthFacet");
+  const facet = RegistryWhitelistAuthFacet.attach(diamondResolver.address);
+
+  await (await facet.setWhitelisted(controller.address, true)).wait()
+  await (await facet.setWhitelisted(reverseRegistrar.address, true)).wait()
 }
 
 func.id = 'registry-whitelist-auth'

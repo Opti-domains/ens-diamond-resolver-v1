@@ -5,7 +5,7 @@ import "../base/DiamondResolverBaseInternal.sol";
 import "../base/IDiamondResolverAuth.sol";
 
 contract RegistryOwnedAuthFacet is DiamondResolverBaseInternal, IDiamondResolverAuth {
-    function isAuthorised(bytes32) public virtual view returns (bool) {
-        return msg.sender == OwnableStorage.layout().owner;
+    function isAuthorised(address sender, bytes32) public virtual view returns (bool) {
+        return sender == OwnableStorage.layout().owner;
     }
 }

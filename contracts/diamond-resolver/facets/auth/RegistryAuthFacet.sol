@@ -5,7 +5,7 @@ import "../base/DiamondResolverBaseInternal.sol";
 import "../base/IDiamondResolverAuth.sol";
 
 contract RegistryAuthFacet is DiamondResolverBaseInternal, IDiamondResolverAuth {
-    function isAuthorised(bytes32 node) public virtual view returns (bool) {
+    function isAuthorised(address sender, bytes32 node) public virtual view returns (bool) {
         DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage
             .layout();
         address owner = l.ens.owner(node);
@@ -14,8 +14,8 @@ contract RegistryAuthFacet is DiamondResolverBaseInternal, IDiamondResolverAuth 
         }
 
         return
-            owner == msg.sender ||
-            _isApprovedForAll(owner, msg.sender) ||
-            _isApprovedFor(owner, node, msg.sender);
+            owner == sender ||
+            _isApprovedForAll(owner, sender) ||
+            _isApprovedFor(owner, node, sender);
     }
 }

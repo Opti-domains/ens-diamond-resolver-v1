@@ -16,7 +16,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   const deployment = await deploy('PublicResolverFacet', deployArgs)
-  if (!deployment.newlyDeployed) return
+  // if (!deployment.newlyDeployed) return
 
   const diamondResolver = await ethers.getContract('DiamondResolver', owner)
   const publicResolver = await ethers.getContract('PublicResolverFacet', owner)
