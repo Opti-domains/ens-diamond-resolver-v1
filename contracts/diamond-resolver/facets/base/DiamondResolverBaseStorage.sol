@@ -14,12 +14,6 @@ library DiamondResolverBaseStorage {
         INameWrapper nameWrapper;
 
         /**
-         * trustedETHController and trustedReverseRegistrar has right to control any name regardless of approval
-         * controller address => whitelisted
-         */
-        mapping(address => bool) whitelisted;
-
-        /**
          * A mapping of operators. An address that is authorised for an address
          * may make any changes to the name that the owner could, but may not update
          * the set of authorisations.

@@ -1,4 +1,5 @@
 [
+  "error Unauthorised()",
   "event ABIChanged(bytes32 indexed,uint256 indexed)",
   "event AddrChanged(bytes32 indexed,address)",
   "event AddressChanged(bytes32 indexed,uint256,bytes)",

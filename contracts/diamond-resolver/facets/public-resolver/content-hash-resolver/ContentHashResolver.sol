@@ -31,7 +31,7 @@ abstract contract ContentHashResolver is IContentHashResolver, DiamondResolverUt
     function setContenthash(
         bytes32 node,
         bytes calldata hash
-    ) external virtual whitelisted(node) {
+    ) external virtual authorised(node) {
         ContentHashResolverStorage.Layout storage l = ContentHashResolverStorage
             .layout();
         l.versionable_hashes[_recordVersions(node)][node] = hash;

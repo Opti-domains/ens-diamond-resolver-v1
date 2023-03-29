@@ -9,8 +9,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const ownerSigner = await ethers.getSigner(owner)
 
+  const deployArgs = {
+    from: deployer,
+    args: [],
+    log: true,
+  }
+
+  const deployment = await deploy('PublicResolverFacet', deployArgs)
+  if (!deployment.newlyDeployed) return
+
   const diamondResolver = await ethers.getContract('DiamondResolver', owner)
-  const publicResolver = await ethers.getContract('PublicResolver', owner)
+  const publicResolver = await ethers.getContract('PublicResolverFacet', owner)
 
   const selectors = [
     ethers.utils.id("ABI(bytes32,uint256)").substring(0, 10),
@@ -55,14 +64,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     "0x59d1d43c", // ITextResolver
   ]
 
-  console.log(selectors)
-
-  // const facetCutParsed = ethers.utils.AbiCoder.prototype.encode(
-  //   ['address', 'uint', 'bytes4[]'],
-  //   [facetCut.target, facetCut.action, []]
-  // );
-
-  await diamondResolver.connect(ownerSigner).diamondCut(
+  const tx1 = await diamondResolver.connect(ownerSigner).diamondCut(
     [facetCut],
     // "0x0000000000000000000000000000000000000000",
     diamondResolver.address, 
@@ -75,10 +77,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       ]
     ),
   )
+
+  await tx1.wait()
 }
 
-func.id = 'connect-public-resolver'
-func.tags = []
-func.dependencies = ['DiamondResolver', 'PublicResolverFacet']
+func.id = 'public-resolver'
+func.tags = ['PublicResolverFacet']
+func.dependencies = []
 
 export default func

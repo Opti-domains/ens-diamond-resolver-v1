@@ -18,13 +18,12 @@ contract DiamondResolver is SolidStateDiamond, Multicallable, ReverseClaimer, Di
         _setEns(_ens);
         _setNameWrapper(_nameWrapper);
 
-        bytes4[] memory selectors = new bytes4[](8);
+        bytes4[] memory selectors = new bytes4[](7);
         uint256 selectorIndex;
 
         // register DiamondResolverBase
 
         selectors[selectorIndex++] = IDiamondResolverBase.setNameWrapper.selector;
-        selectors[selectorIndex++] = IDiamondResolverBase.setWhitelisted.selector;
         selectors[selectorIndex++] = IDiamondResolverBase.setApprovalForAll.selector;
         selectors[selectorIndex++] = IDiamondResolverBase.isApprovedForAll.selector;
         selectors[selectorIndex++] = IDiamondResolverBase.approve.selector;

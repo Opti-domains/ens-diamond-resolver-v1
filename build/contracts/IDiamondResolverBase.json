@@ -5,6 +5,5 @@
   "function isApprovedForAll(address,address) view returns (bool)",
   "function recordVersions(bytes32) view returns (uint64)",
   "function setApprovalForAll(address,bool)",
-  "function setNameWrapper(address)",
-  "function setWhitelisted(address,bool)"
+  "function setNameWrapper(address)"
 ]

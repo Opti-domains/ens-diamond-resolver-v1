@@ -8,8 +8,6 @@ import {INameWrapper} from "../../../wrapper/INameWrapper.sol";
 interface IDiamondResolverBase is IVersionableResolver {
     function setNameWrapper(INameWrapper nameWrapper) external;
 
-    function setWhitelisted(address operator, bool approved) external;
-
     function setApprovalForAll(address operator, bool approved) external;
 
     function isApprovedForAll(

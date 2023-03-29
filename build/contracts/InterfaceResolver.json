@@ -1,4 +1,5 @@
 [
+  "error Unauthorised()",
   "event AddrChanged(bytes32 indexed,address)",
   "event AddressChanged(bytes32 indexed,uint256,bytes)",
   "event InterfaceChanged(bytes32 indexed,bytes4 indexed,address)",

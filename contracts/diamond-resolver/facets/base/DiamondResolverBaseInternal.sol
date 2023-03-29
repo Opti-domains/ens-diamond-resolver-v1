@@ -32,9 +32,6 @@ abstract contract DiamondResolverBaseInternal is DiamondResolverUtil {
     );
 
     event SetNameWrapper(address indexed nameWrapper);
-
-    event SetWhitelisted(address indexed operator, bool approved);
-
     function _setEns(ENS ens) internal {
         DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage
             .layout();
@@ -46,13 +43,6 @@ abstract contract DiamondResolverBaseInternal is DiamondResolverUtil {
             .layout();
         l.nameWrapper = nameWrapper;
         emit SetNameWrapper(address(nameWrapper));
-    }
-
-    function _setWhitelisted(address operator, bool approved) internal {
-        DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage
-            .layout();
-        l.whitelisted[operator] = approved;
-        emit SetWhitelisted(operator, approved);
     }
 
     /**
@@ -80,5 +70,30 @@ abstract contract DiamondResolverBaseInternal is DiamondResolverUtil {
             .layout();
         l.tokenApprovals[msg.sender][node][delegate] = approved;
         emit Approved(msg.sender, node, delegate, approved);
+    }
+
+    /**
+     * @dev See {IERC1155-isApprovedForAll}.
+     */
+    function _isApprovedForAll(
+        address account,
+        address operator
+    ) internal view returns (bool) {
+        DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage
+            .layout();
+        return l.operatorApprovals[account][operator];
+    }
+
+    /**
+     * @dev Check to see if the delegate has been approved by the owner for the node.
+     */
+    function _isApprovedFor(
+        address owner,
+        bytes32 node,
+        address delegate
+    ) internal view returns (bool) {
+        DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage
+            .layout();
+        return l.tokenApprovals[owner][node][delegate];
     }
 }

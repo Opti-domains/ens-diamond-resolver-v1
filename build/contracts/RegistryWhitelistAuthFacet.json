@@ -1,0 +1,11 @@
+[
+  "error Ownable__NotOwner()",
+  "error Unauthorised()",
+  "event ApprovalForAll(address indexed,address indexed,bool)",
+  "event Approved(address,bytes32 indexed,address indexed,bool indexed)",
+  "event SetNameWrapper(address indexed)",
+  "event SetWhitelisted(address indexed,bool)",
+  "event VersionChanged(bytes32 indexed,uint64)",
+  "function isAuthorised(bytes32) view returns (bool)",
+  "function setWhitelisted(address,bool)"
+]

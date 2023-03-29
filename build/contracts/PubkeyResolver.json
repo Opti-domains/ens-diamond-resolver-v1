@@ -1,4 +1,5 @@
 [
+  "error Unauthorised()",
   "event PubkeyChanged(bytes32 indexed,bytes32,bytes32)",
   "event VersionChanged(bytes32 indexed,uint64)",
   "function pubkey(bytes32) view returns (bytes32, bytes32)",

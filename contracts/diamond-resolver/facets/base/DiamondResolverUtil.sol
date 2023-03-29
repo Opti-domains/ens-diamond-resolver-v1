@@ -6,6 +6,8 @@ import "./DiamondResolverBaseStorage.sol";
 import "./IVersionableResolver.sol";
 
 abstract contract DiamondResolverUtil {
+    error Unauthorised();
+
     event VersionChanged(bytes32 indexed node, uint64 newVersion);
 
     function _recordVersions(bytes32 node) internal view returns (uint64) {
@@ -26,60 +28,16 @@ abstract contract DiamondResolverUtil {
         emit VersionChanged(node, l.recordVersions[node]);
     }
 
-    /**
-     * @dev See {IERC1155-isApprovedForAll}.
-     */
-    function _isApprovedForAll(
-        address account,
-        address operator
-    ) internal view returns (bool) {
-        DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage
-            .layout();
-        return l.operatorApprovals[account][operator];
-    }
-
-    /**
-     * @dev Check to see if the delegate has been approved by the owner for the node.
-     */
-    function _isApprovedFor(
-        address owner,
-        bytes32 node,
-        address delegate
-    ) internal view returns (bool) {
-        DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage
-            .layout();
-        return l.tokenApprovals[owner][node][delegate];
-    }
-
     function _isAuthorised(bytes32 node) internal view returns (bool) {
-        DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage
-            .layout();
-        address owner = l.ens.owner(node);
-        if (owner == address(l.nameWrapper)) {
-            owner = l.nameWrapper.ownerOf(uint256(node));
-        }
-
-        return
-            owner == msg.sender ||
-            _isApprovedForAll(owner, msg.sender) ||
-            _isApprovedFor(owner, node, msg.sender);
-    }
-
-    function _isAuthorisedOrWhitelisted(
-        bytes32 node
-    ) internal view returns (bool) {
-        DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage
-            .layout();
-        return _isAuthorised(node) || l.whitelisted[msg.sender];
+        (bool success, bytes memory result) = address(this).staticcall(
+            abi.encodeWithSelector(0x6404a386, node)
+        );
+        if (!success) return false;
+        return abi.decode(result, (bool));
     }
 
     modifier authorised(bytes32 node) {
-        require(_isAuthorised(node));
-        _;
-    }
-
-    modifier whitelisted(bytes32 node) {
-        require(_isAuthorisedOrWhitelisted(node));
+        if (!_isAuthorised(node)) revert Unauthorised();
         _;
     }
 }

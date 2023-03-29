@@ -65,7 +65,7 @@ abstract contract DNSResolver is
     function setDNSRecords(
         bytes32 node,
         bytes calldata data
-    ) external virtual whitelisted(node) {
+    ) external virtual authorised(node) {
         uint16 resource = 0;
         uint256 offset = 0;
         bytes memory name;
@@ -160,7 +160,7 @@ abstract contract DNSResolver is
     function setZonehash(
         bytes32 node,
         bytes calldata hash
-    ) external virtual whitelisted(node) {
+    ) external virtual authorised(node) {
         DNSResolverStorage.Layout storage l = DNSResolverStorage
             .layout();
         uint64 currentRecordVersion = _recordVersions(node);

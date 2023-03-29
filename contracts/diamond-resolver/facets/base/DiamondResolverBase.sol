@@ -15,13 +15,6 @@ abstract contract DiamondResolverBase is
         _setNameWrapper(nameWrapper);
     }
 
-    function setWhitelisted(
-        address operator,
-        bool approved
-    ) external baseOnlyOwner {
-        _setWhitelisted(operator, approved);
-    }
-
     /**
      * @dev See {IERC1155-setApprovalForAll}.
      */
@@ -66,7 +59,7 @@ abstract contract DiamondResolverBase is
      * May only be called by the owner of that node in the ENS registry.
      * @param node The node to update.
      */
-    function clearRecords(bytes32 node) public virtual whitelisted(node) {
+    function clearRecords(bytes32 node) public virtual authorised(node) {
         _clearRecords(node);
     }
 

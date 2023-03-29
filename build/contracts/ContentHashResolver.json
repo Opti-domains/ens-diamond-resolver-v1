@@ -1,4 +1,5 @@
 [
+  "error Unauthorised()",
   "event ContenthashChanged(bytes32 indexed,bytes)",
   "event VersionChanged(bytes32 indexed,uint64)",
   "function contenthash(bytes32) view returns (bytes)",

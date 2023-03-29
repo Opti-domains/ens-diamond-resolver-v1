@@ -1,0 +1,3 @@
+[
+  "function isAuthorised(bytes32) view returns (bool)"
+]

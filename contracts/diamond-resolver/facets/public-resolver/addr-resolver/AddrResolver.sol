@@ -39,7 +39,7 @@ abstract contract AddrResolver is
     function setAddr(
         bytes32 node,
         address a
-    ) external virtual whitelisted(node) {
+    ) external virtual authorised(node) {
         setAddr(node, COIN_TYPE_ETH, addressToBytes(a));
     }
 
@@ -62,7 +62,7 @@ abstract contract AddrResolver is
         bytes32 node,
         uint256 coinType,
         bytes memory a
-    ) public virtual whitelisted(node) {
+    ) public virtual authorised(node) {
         AddrResolverStorage.Layout storage l = AddrResolverStorage
             .layout();
         emit AddressChanged(node, coinType, a);
