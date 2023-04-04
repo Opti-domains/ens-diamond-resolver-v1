@@ -2,18 +2,24 @@
 pragma solidity >=0.8.17 <0.9.0;
 
 import "./SolidStateDiamond.sol";
-import "../registry/ENS.sol";
+import "./DiamondResolverOverrider.sol";
 import "./Multicallable.sol";
 import "./IDiamondResolver.sol";
 import "./facets/base/IDiamondResolverBase.sol";
 import "./facets/base/DiamondResolverBase.sol";
+import "../registry/ENS.sol";
 import {ReverseClaimer} from "../reverseRegistrar/ReverseClaimer.sol";
 import {INameWrapper} from "../wrapper/INameWrapper.sol";
 
 bytes4 constant supportsInterfaceSignature = 0x01ffc9a7;
 
-contract DiamondResolver is SolidStateDiamond, Multicallable, ReverseClaimer, DiamondResolverBase {
-
+contract DiamondResolver is 
+    SolidStateDiamond,
+    Multicallable,
+    ReverseClaimer,
+    DiamondResolverBase,
+    DiamondResolverOverrider
+{
     constructor(ENS _ens, INameWrapper _nameWrapper) ReverseClaimer(_ens, msg.sender) {
         _setEns(_ens);
         _setNameWrapper(_nameWrapper);
@@ -87,6 +93,18 @@ contract DiamondResolver is SolidStateDiamond, Multicallable, ReverseClaimer, Di
             unchecked {
                 ++i;
             }
+        }
+    }
+
+    function _getImplementation()
+        internal
+        view
+        virtual
+        override(SolidStateDiamond, DiamondResolverOverrider)
+        returns (address)
+    {
+        if (DiamondResolverOverrider._getImplementation() == address(0)) {
+            return SolidStateDiamond._getImplementation();
         }
     }
 }

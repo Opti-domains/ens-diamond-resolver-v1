@@ -2,13 +2,21 @@
 
 pragma solidity ^0.8.8;
 
+import {OwnableStorage} from "@solidstate/contracts/access/ownable/OwnableStorage.sol";
 import "./DiamondResolverBaseStorage.sol";
 import "./IVersionableResolver.sol";
+
+error NotDiamondOwner();
 
 abstract contract DiamondResolverUtil {
     error Unauthorised();
 
     event VersionChanged(bytes32 indexed node, uint64 newVersion);
+
+    modifier baseOnlyOwner() {
+        if (msg.sender != OwnableStorage.layout().owner) revert NotDiamondOwner();
+        _;
+    }
 
     function _recordVersions(bytes32 node) internal view returns (uint64) {
         DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage

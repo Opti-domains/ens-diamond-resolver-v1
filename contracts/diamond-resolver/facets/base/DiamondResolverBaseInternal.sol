@@ -2,20 +2,12 @@
 
 pragma solidity ^0.8.8;
 
-import {OwnableStorage} from "@solidstate/contracts/access/ownable/OwnableStorage.sol";
 import "./DiamondResolverBaseStorage.sol";
 import "./DiamondResolverUtil.sol";
 
-error Ownable__NotOwner();
 error ERC165Base__InvalidInterfaceId();
 
 abstract contract DiamondResolverBaseInternal is DiamondResolverUtil {
-    // This is done to prevent conflict
-    modifier baseOnlyOwner() {
-        if (msg.sender != OwnableStorage.layout().owner) revert Ownable__NotOwner();
-        _;
-    }
-
     // Logged when an operator is added or removed.
     event ApprovalForAll(
         address indexed owner,

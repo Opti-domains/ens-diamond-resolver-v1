@@ -1,0 +1,10 @@
+[
+  "error NotDiamondOwner()",
+  "error Overrider_ImplementationNotWhitelisted(address)",
+  "error Overrider_SignatureBlacklisted(bytes4)",
+  "error Unauthorised()",
+  "event VersionChanged(bytes32 indexed,uint64)",
+  "function setOverride(bytes32,bytes4,address)",
+  "function setOverrideBlacklist(bytes4[],bool)",
+  "function setWhitelistedImplementation(address[],bool)"
+]

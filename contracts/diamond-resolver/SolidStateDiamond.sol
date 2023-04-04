@@ -103,6 +103,7 @@ abstract contract SolidStateDiamond is
     function _getImplementation()
         internal
         view
+        virtual
         override(DiamondBase, DiamondFallback)
         returns (address implementation)
     {

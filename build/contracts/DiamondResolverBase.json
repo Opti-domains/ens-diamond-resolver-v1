@@ -1,6 +1,6 @@
 [
   "error ERC165Base__InvalidInterfaceId()",
-  "error Ownable__NotOwner()",
+  "error NotDiamondOwner()",
   "error Unauthorised()",
   "event ApprovalForAll(address indexed,address indexed,bool)",
   "event Approved(address,bytes32 indexed,address indexed,bool indexed)",
