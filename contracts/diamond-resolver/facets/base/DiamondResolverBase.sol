@@ -4,17 +4,15 @@ pragma solidity ^0.8.8;
 
 import {ERC165BaseInternal} from "@solidstate/contracts/introspection/ERC165/base/ERC165BaseInternal.sol";
 import "./DiamondResolverBaseInternal.sol";
+import "./DiamondResolverFactory.sol";
 import "./IDiamondResolverBase.sol";
 
 abstract contract DiamondResolverBase is
     IDiamondResolverBase,
     DiamondResolverBaseInternal,
+    DiamondResolverFactory,
     ERC165BaseInternal
 {
-    function setNameWrapper(INameWrapper nameWrapper) external baseOnlyOwner {
-        _setNameWrapper(nameWrapper);
-    }
-
     /**
      * @dev See {IERC1155-setApprovalForAll}.
      */

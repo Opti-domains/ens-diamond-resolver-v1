@@ -6,8 +6,6 @@ import "./IVersionableResolver.sol";
 import {INameWrapper} from "../../../wrapper/INameWrapper.sol";
 
 interface IDiamondResolverBase is IVersionableResolver {
-    function setNameWrapper(INameWrapper nameWrapper) external;
-
     function setApprovalForAll(address operator, bool approved) external;
 
     function isApprovedForAll(

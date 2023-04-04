@@ -26,67 +26,83 @@ abstract contract SolidStateDiamond is
     ERC165BaseInternal
 {
     constructor() {
-        bytes4[] memory selectors = new bytes4[](12);
-        uint256 selectorIndex;
+        initialize(msg.sender, address(0));
+    }
 
-        // register DiamondFallback
+    struct Initialization {
+        bool initialized;
+    }
 
-        selectors[selectorIndex++] = IDiamondFallback
-            .getFallbackAddress
-            .selector;
-        selectors[selectorIndex++] = IDiamondFallback
-            .setFallbackAddress
-            .selector;
+    function initialize(address _owner, address _fallback) public virtual {
+        Initialization storage initialization;
+        bytes32 slot = keccak256("optidomains.contracts.initialization");
+        assembly {
+            initialization.slot := slot
+        }
+
+        require(!initialization.initialized, "Initialized");
+
+        if (_fallback == address(0)) {
+            bytes4[] memory selectors = new bytes4[](12);
+            uint256 selectorIndex;
+
+            // register DiamondFallback
+
+            selectors[selectorIndex++] = IDiamondFallback
+                .getFallbackAddress
+                .selector;
+            selectors[selectorIndex++] = IDiamondFallback
+                .setFallbackAddress
+                .selector;
+
+            // register DiamondWritable
+
+            selectors[selectorIndex++] = IDiamondWritable.diamondCut.selector;
+
+            // register DiamondReadable
+
+            selectors[selectorIndex++] = IDiamondReadable.facets.selector;
+            selectors[selectorIndex++] = IDiamondReadable
+                .facetFunctionSelectors
+                .selector;
+            selectors[selectorIndex++] = IDiamondReadable.facetAddresses.selector;
+            selectors[selectorIndex++] = IDiamondReadable.facetAddress.selector;
+
+            // register ERC165
+
+            selectors[selectorIndex++] = IERC165.supportsInterface.selector;
+
+            // register SafeOwnable
+
+            selectors[selectorIndex++] = Ownable.owner.selector;
+            selectors[selectorIndex++] = SafeOwnable.nomineeOwner.selector;
+            selectors[selectorIndex++] = Ownable.transferOwnership.selector;
+            selectors[selectorIndex++] = SafeOwnable.acceptOwnership.selector;
+
+            // diamond cut
+
+            FacetCut[] memory facetCuts = new FacetCut[](1);
+
+            facetCuts[0] = FacetCut({
+                target: address(this),
+                action: FacetCutAction.ADD,
+                selectors: selectors
+            });
+
+            _diamondCut(facetCuts, address(0), '');
+        } else {
+            _setFallbackAddress(_fallback);
+        }
 
         _setSupportsInterface(type(IDiamondFallback).interfaceId, true);
-
-        // register DiamondWritable
-
-        selectors[selectorIndex++] = IDiamondWritable.diamondCut.selector;
-
         _setSupportsInterface(type(IDiamondWritable).interfaceId, true);
-
-        // register DiamondReadable
-
-        selectors[selectorIndex++] = IDiamondReadable.facets.selector;
-        selectors[selectorIndex++] = IDiamondReadable
-            .facetFunctionSelectors
-            .selector;
-        selectors[selectorIndex++] = IDiamondReadable.facetAddresses.selector;
-        selectors[selectorIndex++] = IDiamondReadable.facetAddress.selector;
-
         _setSupportsInterface(type(IDiamondReadable).interfaceId, true);
-
-        // register ERC165
-
-        selectors[selectorIndex++] = IERC165.supportsInterface.selector;
-
         _setSupportsInterface(type(IERC165).interfaceId, true);
-
-        // register SafeOwnable
-
-        selectors[selectorIndex++] = Ownable.owner.selector;
-        selectors[selectorIndex++] = SafeOwnable.nomineeOwner.selector;
-        selectors[selectorIndex++] = Ownable.transferOwnership.selector;
-        selectors[selectorIndex++] = SafeOwnable.acceptOwnership.selector;
-
         _setSupportsInterface(type(IERC173).interfaceId, true);
-
-        // diamond cut
-
-        FacetCut[] memory facetCuts = new FacetCut[](1);
-
-        facetCuts[0] = FacetCut({
-            target: address(this),
-            action: FacetCutAction.ADD,
-            selectors: selectors
-        });
-
-        _diamondCut(facetCuts, address(0), '');
 
         // set owner
 
-        _setOwner(msg.sender);
+        _setOwner(_owner);
     }
 
     receive() external payable {}
@@ -113,11 +129,6 @@ abstract contract SolidStateDiamond is
     function supportsInterface(
         bytes4 interfaceID
     ) public view virtual override(IERC165) returns (bool) {
-        return
-            interfaceID == type(IDiamondFallback).interfaceId ||
-            interfaceID == type(IDiamondWritable).interfaceId ||
-            interfaceID == type(IDiamondReadable).interfaceId ||
-            interfaceID == type(IERC165).interfaceId ||
-            interfaceID == type(IERC173).interfaceId;
+        return _supportsInterface(interfaceID);
     }
 }

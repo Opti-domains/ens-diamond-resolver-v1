@@ -1,0 +1,8 @@
+[
+  "function backward(address) view returns (address)",
+  "function ens() view returns (address)",
+  "function forward(address) view returns (address)",
+  "function isNameWrapper(address) view returns (bool)",
+  "function nameWrapper() view returns (address)",
+  "function upgrade(address,address)"
+]

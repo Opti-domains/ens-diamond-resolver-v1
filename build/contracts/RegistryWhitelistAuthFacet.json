@@ -3,7 +3,6 @@
   "error Unauthorised()",
   "event ApprovalForAll(address indexed,address indexed,bool)",
   "event Approved(address,bytes32 indexed,address indexed,bool indexed)",
-  "event SetNameWrapper(address indexed)",
   "event SetWhitelisted(address indexed,bool)",
   "event VersionChanged(bytes32 indexed,uint64)",
   "function isAuthorised(address,bytes32) view returns (bool)",

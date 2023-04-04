@@ -21,6 +21,7 @@
   "function interfaceImplementer(bytes32,bytes4) view returns (address)",
   "function name(bytes32) view returns (string)",
   "function pubkey(bytes32) view returns (bytes32, bytes32)",
+  "function resolve(bytes,bytes) view returns (bytes)",
   "function setABI(bytes32,uint256,bytes)",
   "function setAddr(bytes32,uint256,bytes)",
   "function setAddr(bytes32,address)",

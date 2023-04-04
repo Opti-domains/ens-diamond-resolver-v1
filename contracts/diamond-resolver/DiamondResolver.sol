@@ -8,6 +8,8 @@ import "./IDiamondResolver.sol";
 import "./facets/base/IDiamondResolverBase.sol";
 import "./facets/base/DiamondResolverBase.sol";
 import "../registry/ENS.sol";
+import "./INameWrapperRegistry.sol";
+import {IReverseRegistrar} from "../reverseRegistrar/IReverseRegistrar.sol";
 import {ReverseClaimer} from "../reverseRegistrar/ReverseClaimer.sol";
 import {INameWrapper} from "../wrapper/INameWrapper.sol";
 
@@ -16,41 +18,50 @@ bytes4 constant supportsInterfaceSignature = 0x01ffc9a7;
 contract DiamondResolver is 
     SolidStateDiamond,
     Multicallable,
-    ReverseClaimer,
-    DiamondResolverBase,
-    DiamondResolverOverrider
+    DiamondResolverBase
 {
-    constructor(ENS _ens, INameWrapper _nameWrapper) ReverseClaimer(_ens, msg.sender) {
-        _setEns(_ens);
-        _setNameWrapper(_nameWrapper);
+    bytes32 constant ADDR_REVERSE_NODE =
+        0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2;
 
-        bytes4[] memory selectors = new bytes4[](7);
-        uint256 selectorIndex;
+    INameWrapperRegistry public immutable registry;
 
-        // register DiamondResolverBase
+    constructor(INameWrapperRegistry _registry) {
+        registry = _registry;
+    }
 
-        selectors[selectorIndex++] = IDiamondResolverBase.setNameWrapper.selector;
-        selectors[selectorIndex++] = IDiamondResolverBase.setApprovalForAll.selector;
-        selectors[selectorIndex++] = IDiamondResolverBase.isApprovedForAll.selector;
-        selectors[selectorIndex++] = IDiamondResolverBase.approve.selector;
-        selectors[selectorIndex++] = IDiamondResolverBase.isApprovedFor.selector;
-        selectors[selectorIndex++] = IVersionableResolver.recordVersions.selector;
-        selectors[selectorIndex++] = IVersionableResolver.clearRecords.selector;
+    function initialize(address _owner, address _fallback) public virtual override {
+        super.initialize(_owner, _fallback);
 
-        // diamond cut
+        if (_fallback == address(0)) {
+            bytes4[] memory selectors = new bytes4[](7);
+            uint256 selectorIndex;
 
-        FacetCut[] memory facetCuts = new FacetCut[](1);
+            // register DiamondResolverBase
 
-        facetCuts[0] = FacetCut({
-            target: address(this),
-            action: FacetCutAction.ADD,
-            selectors: selectors
-        });
+            selectors[selectorIndex++] = IHasNameWrapperRegistry.registry.selector;
+            selectors[selectorIndex++] = IDiamondResolverBase.setApprovalForAll.selector;
+            selectors[selectorIndex++] = IDiamondResolverBase.isApprovedForAll.selector;
+            selectors[selectorIndex++] = IDiamondResolverBase.approve.selector;
+            selectors[selectorIndex++] = IDiamondResolverBase.isApprovedFor.selector;
+            selectors[selectorIndex++] = IVersionableResolver.recordVersions.selector;
+            selectors[selectorIndex++] = IVersionableResolver.clearRecords.selector;
 
-        _diamondCut(facetCuts, address(0), '');
+            // diamond cut
+
+            FacetCut[] memory facetCuts = new FacetCut[](1);
+
+            facetCuts[0] = FacetCut({
+                target: address(this),
+                action: FacetCutAction.ADD,
+                selectors: selectors
+            });
+
+            _diamondCut(facetCuts, address(0), '');
+        }
 
         _setSupportsInterface(type(IDiamondResolver).interfaceId, true);
         _setSupportsInterface(type(IVersionableResolver).interfaceId, true);
+        _setSupportsInterface(type(IHasNameWrapperRegistry).interfaceId, true);
     }
 
     function supportsInterface(
@@ -63,48 +74,5 @@ contract DiamondResolver is
         returns (bool)
     {
         return _supportsInterface(interfaceID) || super.supportsInterface(interfaceID);
-    }
-
-    function supportsInterfaceUnoptimized(
-        bytes4 interfaceID
-    )
-        public
-        view
-        virtual
-        returns (bool result)
-    {
-        result = super.supportsInterface(interfaceID);
-
-        // Get facets and check for support interface
-        address[] memory addresses = DiamondResolver(payable(address(this)))
-            .facetAddresses();
-        uint256 addressesLength = addresses.length;
-        for (uint256 i; i < addressesLength; ) {
-            if (addresses[i] == address(this)) continue;
-
-            (bool success, bytes memory data) = addresses[i].staticcall(
-                abi.encodeWithSelector(supportsInterfaceSignature, interfaceID)
-            );
-
-            if (success) {
-                result = result || abi.decode(data, (bool));
-            }
-
-            unchecked {
-                ++i;
-            }
-        }
-    }
-
-    function _getImplementation()
-        internal
-        view
-        virtual
-        override(SolidStateDiamond, DiamondResolverOverrider)
-        returns (address)
-    {
-        if (DiamondResolverOverrider._getImplementation() == address(0)) {
-            return SolidStateDiamond._getImplementation();
-        }
     }
 }

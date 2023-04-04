@@ -23,20 +23,6 @@ abstract contract DiamondResolverBaseInternal is DiamondResolverUtil {
         bool indexed approved
     );
 
-    event SetNameWrapper(address indexed nameWrapper);
-    function _setEns(ENS ens) internal {
-        DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage
-            .layout();
-        l.ens = ens;
-    }
-
-    function _setNameWrapper(INameWrapper nameWrapper) internal {
-        DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage
-            .layout();
-        l.nameWrapper = nameWrapper;
-        emit SetNameWrapper(address(nameWrapper));
-    }
-
     /**
      * @dev See {IERC1155-setApprovalForAll}.
      */

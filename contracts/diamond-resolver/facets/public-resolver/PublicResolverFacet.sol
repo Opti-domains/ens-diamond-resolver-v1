@@ -10,6 +10,7 @@ import "./interface-resolver/InterfaceResolver.sol";
 import "./name-resolver/NameResolver.sol";
 import "./pubkey-resolver/PubkeyResolver.sol";
 import "./text-resolver/TextResolver.sol";
+import "./extended-resolver/ExtendedResolver.sol";
 
 contract PublicResolverFacet is
     ABIResolver,
@@ -19,7 +20,8 @@ contract PublicResolverFacet is
     InterfaceResolver,
     NameResolver,
     PubkeyResolver,
-    TextResolver
+    TextResolver,
+    ExtendedResolver
 {
     function supportsInterface(
         bytes4 interfaceID
@@ -34,7 +36,8 @@ contract PublicResolverFacet is
             InterfaceResolver,
             NameResolver,
             PubkeyResolver,
-            TextResolver
+            TextResolver,
+            ExtendedResolver
         )
         returns (bool)
     {

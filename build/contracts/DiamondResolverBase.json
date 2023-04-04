@@ -4,15 +4,15 @@
   "error Unauthorised()",
   "event ApprovalForAll(address indexed,address indexed,bool)",
   "event Approved(address,bytes32 indexed,address indexed,bool indexed)",
-  "event SetNameWrapper(address indexed)",
+  "event CloneDiamondResolver(address indexed,address indexed)",
   "event VersionChanged(bytes32 indexed,uint64)",
   "function approve(bytes32,address,bool)",
   "function clearRecords(bytes32)",
+  "function clone()",
   "function isApprovedFor(address,bytes32,address) view returns (bool)",
   "function isApprovedForAll(address,address) view returns (bool)",
   "function recordVersions(bytes32) view returns (uint64)",
   "function setApprovalForAll(address,bool)",
   "function setMultiSupportsInterface(bytes4[],bool)",
-  "function setNameWrapper(address)",
   "function setSupportsInterface(bytes4,bool)"
 ]

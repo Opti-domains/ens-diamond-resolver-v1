@@ -10,9 +10,6 @@ import {INameWrapper} from "../../../wrapper/INameWrapper.sol";
  */
 library DiamondResolverBaseStorage {
     struct Layout {
-        ENS ens;
-        INameWrapper nameWrapper;
-
         /**
          * A mapping of operators. An address that is authorised for an address
          * may make any changes to the name that the owner could, but may not update

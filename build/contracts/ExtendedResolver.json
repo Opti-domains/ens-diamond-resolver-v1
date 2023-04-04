@@ -1,3 +1,4 @@
 [
-  "function resolve(bytes,bytes) view returns (bytes)"
+  "function resolve(bytes,bytes) view returns (bytes)",
+  "function supportsInterface(bytes4) view returns (bool)"
 ]
