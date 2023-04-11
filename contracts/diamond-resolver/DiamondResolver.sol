@@ -33,7 +33,7 @@ contract DiamondResolver is
         super.initialize(_owner, _fallback);
 
         if (_fallback == address(0)) {
-            bytes4[] memory selectors = new bytes4[](7);
+            bytes4[] memory selectors = new bytes4[](8);
             uint256 selectorIndex;
 
             // register DiamondResolverBase
@@ -45,6 +45,7 @@ contract DiamondResolver is
             selectors[selectorIndex++] = IDiamondResolverBase.isApprovedFor.selector;
             selectors[selectorIndex++] = IVersionableResolver.recordVersions.selector;
             selectors[selectorIndex++] = IVersionableResolver.clearRecords.selector;
+            selectors[selectorIndex++] = IDiamondResolverFactory.clone.selector;
 
             // diamond cut
 
@@ -62,6 +63,7 @@ contract DiamondResolver is
         _setSupportsInterface(type(IDiamondResolver).interfaceId, true);
         _setSupportsInterface(type(IVersionableResolver).interfaceId, true);
         _setSupportsInterface(type(IHasNameWrapperRegistry).interfaceId, true);
+        _setSupportsInterface(type(IDiamondResolverFactory).interfaceId, true);
     }
 
     function supportsInterface(

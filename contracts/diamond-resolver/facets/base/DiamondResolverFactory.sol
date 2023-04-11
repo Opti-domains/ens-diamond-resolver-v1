@@ -3,12 +3,13 @@
 pragma solidity ^0.8.8;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
+import "./IDiamondResolverFactory.sol";
 
 interface IDiamondResolverInitialize {
     function initialize(address _owner, address _fallback) external;
 }
 
-contract DiamondResolverFactory {
+contract DiamondResolverFactory is IDiamondResolverFactory {
     event CloneDiamondResolver(address indexed cloner, address indexed resolver);
 
     /**
