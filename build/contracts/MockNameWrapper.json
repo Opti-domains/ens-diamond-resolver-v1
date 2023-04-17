@@ -1,0 +1,4 @@
+[
+  "function ownerOf(uint256) view returns (address)",
+  "function supportsInterface(bytes4) view returns (bool)"
+]

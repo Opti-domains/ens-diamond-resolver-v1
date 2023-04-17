@@ -25,8 +25,8 @@ abstract contract SolidStateDiamond is
     SafeOwnable,
     ERC165BaseInternal
 {
-    constructor() {
-        initialize(msg.sender, address(0));
+    constructor(address _owner) {
+        initialize(_owner, address(0));
     }
 
     struct Initialization {

@@ -1,0 +1,9 @@
+[
+  "error Unauthorised()",
+  "event VersionChanged(bytes32 indexed,uint64)",
+  "function addr(bytes32) view returns (address)",
+  "function addr(bytes32,uint256) view returns (bytes)",
+  "function setAddr(bytes32,uint256,bytes)",
+  "function setAddr(bytes32,address)",
+  "function supportsInterface(bytes4) view returns (bool)"
+]

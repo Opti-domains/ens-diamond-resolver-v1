@@ -1,12 +1,11 @@
 [
-  "constructor(address,address)",
+  "constructor(address)",
   "event NameWrapperUpgraded(address indexed,address indexed)",
   "event OwnershipTransferred(address indexed,address indexed)",
   "function backward(address) view returns (address)",
   "function ens() view returns (address)",
   "function forward(address) view returns (address)",
   "function isNameWrapper(address) view returns (bool)",
-  "function nameWrapper() view returns (address)",
   "function owner() view returns (address)",
   "function renounceOwnership()",
   "function supportsInterface(bytes4) view returns (bool)",

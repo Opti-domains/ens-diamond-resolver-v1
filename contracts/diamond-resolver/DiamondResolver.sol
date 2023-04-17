@@ -25,7 +25,7 @@ contract DiamondResolver is
 
     INameWrapperRegistry public immutable registry;
 
-    constructor(INameWrapperRegistry _registry) {
+    constructor(address _owner, INameWrapperRegistry _registry) SolidStateDiamond(_owner) {
         registry = _registry;
     }
 

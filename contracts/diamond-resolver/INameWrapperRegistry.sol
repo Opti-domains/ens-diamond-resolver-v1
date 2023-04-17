@@ -6,7 +6,6 @@ import {INameWrapper} from "../wrapper/INameWrapper.sol";
 
 interface INameWrapperRegistry {
   function ens() external view returns(ENS);
-  function nameWrapper() external view returns(INameWrapper);
   function forward(INameWrapper wrapper) external view returns(INameWrapper);
   function backward(INameWrapper wrapper) external view returns(INameWrapper);
   function isNameWrapper(address wrapper) external view returns(bool);

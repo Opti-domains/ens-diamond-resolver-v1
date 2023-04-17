@@ -1,5 +1,5 @@
 [
-  "constructor(address)",
+  "constructor(address,address)",
   "error DiamondWritable__InvalidInitializationParameters()",
   "error DiamondWritable__RemoveTargetNotZeroAddress()",
   "error DiamondWritable__ReplaceTargetIsIdentical()",
