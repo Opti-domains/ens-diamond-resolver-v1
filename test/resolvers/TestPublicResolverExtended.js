@@ -198,7 +198,7 @@ async function deployPublicResolverFacet(_diamondResolver) {
   return await PublicResolverFacet.at(diamondResolver.address)
 }
 
-async function deployTestAddrResolver(_diamondResolver) {
+async function deployTestAddrResolver(_diamondResolver, action = 0) {
   const diamondResolver = await (
     await ethers.getContractFactory('DiamondResolver')
   ).attach(_diamondResolver.address)
@@ -214,7 +214,7 @@ async function deployTestAddrResolver(_diamondResolver) {
 
   const facetCut = {
     target: facet.address,
-    action: 0, // ADD
+    action, // ADD or REPLACE
     selectors: selectors
   }
 
@@ -242,51 +242,7 @@ async function deployTestAddrResolver(_diamondResolver) {
   return await TestAddrResolver.at(diamondResolver.address)
 }
 
-async function deployTestAddrResolver(_diamondResolver) {
-  const diamondResolver = await (
-    await ethers.getContractFactory('DiamondResolver')
-  ).attach(_diamondResolver.address)
-
-  const facet = await TestAddrResolver.new();
-
-  const selectors = [
-    ethers.utils.id("addr(bytes32)").substring(0, 10),
-    ethers.utils.id("addr(bytes32,uint256)").substring(0, 10),
-    ethers.utils.id("setAddr(bytes32,uint256,bytes)").substring(0, 10),
-    ethers.utils.id("setAddr(bytes32,address)").substring(0, 10),
-  ]
-
-  const facetCut = {
-    target: facet.address,
-    action: 1, // REPLACE
-    selectors: selectors
-  }
-
-  const supportInterfaces = [
-    "0xf1cb7e06", // IAddressResolver
-    "0x3b3b57de", // IAddrResolver
-  ]
-
-  const tx1 = await diamondResolver.diamondCut(
-    [facetCut],
-    // "0x0000000000000000000000000000000000000000",
-    diamondResolver.address, 
-    // "0x",
-    diamondResolver.interface.encodeFunctionData(
-      "setMultiSupportsInterface",
-      [
-        supportInterfaces,
-        true,
-      ]
-    ),
-  )
-
-  await tx1.wait()
-
-  return await TestAddrResolver.at(diamondResolver.address)
-}
-
-async function removeTestAddrResolver(_diamondResolver, facetAddress) {
+async function removeTestAddrResolver(_diamondResolver) {
   const diamondResolver = await (
     await ethers.getContractFactory('DiamondResolver')
   ).attach(_diamondResolver.address)
@@ -299,7 +255,7 @@ async function removeTestAddrResolver(_diamondResolver, facetAddress) {
   ]
 
   const facetCut = {
-    target: facetAddress,
+    target: "0x0000000000000000000000000000000000000000",
     action: 2, // REMOVE
     selectors: selectors
   }
@@ -355,7 +311,7 @@ async function deployWeirdResolver(_diamondResolver, weirdConst) {
   return await TestAddrResolver.at(diamondResolver.address)
 }
 
-async function removeWeirdResolver(_diamondResolver, facetAddress) {
+async function removeWeirdResolver(_diamondResolver) {
   const diamondResolver = await (
     await ethers.getContractFactory('DiamondResolver')
   ).attach(_diamondResolver.address)
@@ -365,7 +321,7 @@ async function removeWeirdResolver(_diamondResolver, facetAddress) {
   ]
 
   const facetCut = {
-    target: facetAddress,
+    target: "0x0000000000000000000000000000000000000000",
     action: 2, // REMOVE
     selectors: selectors
   }
@@ -378,6 +334,13 @@ async function removeWeirdResolver(_diamondResolver, facetAddress) {
   )
 
   await tx1.wait()
+}
+
+async function cloneResolver(diamondResolver) {
+  const cloneTx = await diamondResolver.clone()
+  const newResolverAddress = cloneTx.logs[cloneTx.logs.length - 1].args.resolver
+  const newResolver = await PublicResolver.at(newResolverAddress)
+  return newResolver
 }
 
 contract('PublicResolver', function (accounts) {
@@ -415,10 +378,64 @@ contract('PublicResolver', function (accounts) {
     })
   })
 
-  describe('Single operations', () => {
-    it('Can clone DiamondResolver', async () => {
-      
+  it('Can clone DiamondResolver', async () => {
+    const newDiamondResolver = await cloneResolver(diamondResolver)
+    expect(await newDiamondResolver.getFallbackAddress()).to.equal(diamondResolver.address)
+  })
+
+  it('Can override existing function', async () => {
+    await resolver.methods['setAddr(bytes32,address)'](node, accounts[1], {
+      from: accounts[0],
     })
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+
+    const newDiamondResolver = await cloneResolver(diamondResolver)
+    const newResolver = await PublicResolverFacet.at(newDiamondResolver.address)
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), "0x0000000000000000000000000000000000000000")
+
+    await newResolver.methods['setAddr(bytes32,address)'](node, accounts[1], {
+      from: accounts[0],
+    })
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[1])
+
+    await deployTestAddrResolver(newDiamondResolver)
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), "0x0000000000000000000000000000000000000001")
+
+    await removeTestAddrResolver(newDiamondResolver)
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[1])
+  })
+
+  it('Can apply override existing function from base', async () => {
+    await resolver.methods['setAddr(bytes32,address)'](node, accounts[1], {
+      from: accounts[0],
+    })
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+
+    const newDiamondResolver = await cloneResolver(diamondResolver)
+    const newResolver = await PublicResolverFacet.at(newDiamondResolver.address)
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), "0x0000000000000000000000000000000000000000")
+
+    await newResolver.methods['setAddr(bytes32,address)'](node, accounts[1], {
+      from: accounts[0],
+    })
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[1])
+
+    await deployTestAddrResolver(diamondResolver, 1)
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), "0x0000000000000000000000000000000000000001")
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), "0x0000000000000000000000000000000000000001")
   })
 })
 

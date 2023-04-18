@@ -153,6 +153,12 @@ contract('PublicResolver (Cloned)', function (accounts) {
     auth = await deployWhitelistAuthFacet(diamondResolver)
     resolver = await deployPublicResolverFacet(diamondResolver)
 
+    const cloneTx1 = await diamondResolver.clone()
+    expect(cloneTx1.logs[cloneTx1.logs.length - 1].args.cloner).to.equal(accounts[0])
+    const newResolverAddress1 = cloneTx1.logs[cloneTx1.logs.length - 1].args.resolver
+
+    diamondResolver = await PublicResolver.at(newResolverAddress1)
+
     const cloneTx = await diamondResolver.clone()
     expect(cloneTx.logs[cloneTx.logs.length - 1].args.cloner).to.equal(accounts[0])
     const newResolverAddress = cloneTx.logs[cloneTx.logs.length - 1].args.resolver
