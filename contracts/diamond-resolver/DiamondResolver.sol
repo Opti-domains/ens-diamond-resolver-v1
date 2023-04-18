@@ -75,6 +75,6 @@ contract DiamondResolver is
         override(Multicallable, SolidStateDiamond)
         returns (bool)
     {
-        return _supportsInterface(interfaceID) || super.supportsInterface(interfaceID);
+        return SolidStateDiamond.supportsInterface(interfaceID) || Multicallable.supportsInterface(interfaceID);
     }
 }

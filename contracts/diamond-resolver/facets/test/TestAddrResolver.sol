@@ -20,7 +20,7 @@ library AddrResolverStorage {
     }
 }
 
-abstract contract TestAddrResolver is
+contract TestAddrResolver is
     DiamondResolverUtil,
     IERC165
 {

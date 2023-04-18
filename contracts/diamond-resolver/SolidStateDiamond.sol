@@ -11,6 +11,7 @@ import { DiamondReadable, IDiamondReadable } from '@solidstate/contracts/proxy/d
 import { DiamondWritable, IDiamondWritable } from '@solidstate/contracts/proxy/diamond/writable/DiamondWritable.sol';
 import { ISolidStateDiamond, IERC165 } from '@solidstate/contracts/proxy/diamond/ISolidStateDiamond.sol';
 import { ERC165BaseInternal } from "@solidstate/contracts/introspection/ERC165/base/ERC165BaseInternal.sol";
+import "./DiamondBaseExtendable.sol";
 
 /**
  * @title SolidState "Diamond" proxy reference implementation
@@ -18,8 +19,7 @@ import { ERC165BaseInternal } from "@solidstate/contracts/introspection/ERC165/b
  */
 abstract contract SolidStateDiamond is
     ISolidStateDiamond,
-    DiamondBase,
-    DiamondFallback,
+    DiamondBaseExtendable,
     DiamondReadable,
     DiamondWritable,
     SafeOwnable,
@@ -43,7 +43,7 @@ abstract contract SolidStateDiamond is
         require(!initialization.initialized, "Initialized");
 
         if (_fallback == address(0)) {
-            bytes4[] memory selectors = new bytes4[](12);
+            bytes4[] memory selectors = new bytes4[](13);
             uint256 selectorIndex;
 
             // register DiamondFallback
@@ -53,6 +53,9 @@ abstract contract SolidStateDiamond is
                 .selector;
             selectors[selectorIndex++] = IDiamondFallback
                 .setFallbackAddress
+                .selector;
+            selectors[selectorIndex++] = IDiamondBaseExtendable
+                .getImplementation
                 .selector;
 
             // register DiamondWritable
@@ -94,6 +97,7 @@ abstract contract SolidStateDiamond is
             _setFallbackAddress(_fallback);
         }
 
+        _setSupportsInterface(type(IDiamondBaseExtendable).interfaceId, true);
         _setSupportsInterface(type(IDiamondFallback).interfaceId, true);
         _setSupportsInterface(type(IDiamondWritable).interfaceId, true);
         _setSupportsInterface(type(IDiamondReadable).interfaceId, true);
@@ -113,22 +117,15 @@ abstract contract SolidStateDiamond is
         super._transferOwnership(account);
     }
 
-    /**
-     * @inheritdoc DiamondFallback
-     */
-    function _getImplementation()
-        internal
-        view
-        virtual
-        override(DiamondBase, DiamondFallback)
-        returns (address implementation)
-    {
-        implementation = super._getImplementation();
-    }
-
     function supportsInterface(
         bytes4 interfaceID
-    ) public view virtual override(IERC165) returns (bool) {
-        return _supportsInterface(interfaceID);
+    ) public view virtual override(IERC165) returns (bool result) {
+        result = _supportsInterface(interfaceID);
+        if (!result) {
+            address fallbackAddress = _getFallbackAddress();
+            if (fallbackAddress != address(0)) {
+                result = result || IERC165(fallbackAddress).supportsInterface(interfaceID);
+            }
+        }
     }
 }

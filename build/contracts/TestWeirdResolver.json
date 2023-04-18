@@ -1,0 +1,7 @@
+[
+  "constructor(string)",
+  "error Unauthorised()",
+  "event VersionChanged(bytes32 indexed,uint64)",
+  "function supportsInterface(bytes4) view returns (bool)",
+  "function weird(bytes32) view returns (string)"
+]

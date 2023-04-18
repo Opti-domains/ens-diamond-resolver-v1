@@ -31,6 +31,7 @@
   "function facetFunctionSelectors(address) view returns (bytes4[])",
   "function facets() view returns (tuple(address,bytes4[])[])",
   "function getFallbackAddress() view returns (address)",
+  "function getImplementation(bytes4) view returns (address)",
   "function initialize(address,address)",
   "function isApprovedFor(address,bytes32,address) view returns (bool)",
   "function isApprovedForAll(address,address) view returns (bool)",
