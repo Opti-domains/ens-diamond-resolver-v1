@@ -1408,16 +1408,100 @@ contract('PublicResolver', function (accounts) {
         from: accounts[0],
       })
 
-      assert.equal(tx.logs.length, 3)
-      assert.equal(tx.logs[0].event, 'AddressChanged')
-      assert.equal(tx.logs[0].args.node, node)
-      assert.equal(tx.logs[0].args.newAddress, accounts[1].toLowerCase())
-      assert.equal(tx.logs[1].event, 'AddrChanged')
-      assert.equal(tx.logs[1].args.node, node)
-      assert.equal(tx.logs[1].args.a, accounts[1])
-      assert.equal(tx.logs[2].event, 'TextChanged')
-      assert.equal(tx.logs[2].args.node, node)
-      assert.equal(tx.logs[2].args.key, 'url')
+      const abi = [
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "node",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "coinType",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "bytes",
+              "name": "newAddress",
+              "type": "bytes"
+            }
+          ],
+          "name": "AddressChanged",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "node",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "a",
+              "type": "address"
+            }
+          ],
+          "name": "AddrChanged",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "node",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "string",
+              "name": "indexedKey",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "value",
+              "type": "string"
+            }
+          ],
+          "name": "TextChanged",
+          "type": "event"
+        },
+      ];
+      
+      const interface = new ethers.utils.Interface(abi);
+
+      const receipt = await ethers.provider.getTransactionReceipt(tx.tx);
+      const logs = receipt.logs.map(log => interface.parseLog(log));
+
+      assert.equal(logs.length, 3)
+      assert.equal(logs[0].name, 'AddressChanged')
+      assert.equal(logs[0].args.node, node)
+      assert.equal(logs[0].args.newAddress, accounts[1].toLowerCase())
+      assert.equal(logs[1].name, 'AddrChanged')
+      assert.equal(logs[1].args.node, node)
+      assert.equal(logs[1].args.a, accounts[1])
+      assert.equal(logs[2].name, 'TextChanged')
+      assert.equal(logs[2].args[0], node)
+      assert.equal(logs[2].args[2], 'url')
+      assert.equal(logs[2].args[3], 'https://ethereum.org/')
 
       assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
       assert.equal(await resolver.text(node, 'url'), 'https://ethereum.org/')
