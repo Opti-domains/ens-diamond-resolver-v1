@@ -301,8 +301,7 @@ async function deployWeirdResolver(_diamondResolver, weirdConst) {
 
   const tx1 = await diamondResolver.diamondCut(
     [facetCut],
-    // "0x0000000000000000000000000000000000000000",
-    diamondResolver.address, 
+    "0x0000000000000000000000000000000000000000",
     "0x",
   )
 
@@ -328,8 +327,7 @@ async function removeWeirdResolver(_diamondResolver) {
 
   const tx1 = await diamondResolver.diamondCut(
     [facetCut],
-    // "0x0000000000000000000000000000000000000000",
-    diamondResolver.address, 
+    "0x0000000000000000000000000000000000000000",
     "0x",
   )
 
@@ -436,6 +434,94 @@ contract('PublicResolver', function (accounts) {
 
     assert.equal(await resolver.methods['addr(bytes32)'](node), "0x0000000000000000000000000000000000000001")
     assert.equal(await newResolver.methods['addr(bytes32)'](node), "0x0000000000000000000000000000000000000001")
+  })
+
+  it('Can add new function', async () => {
+    await resolver.methods['setAddr(bytes32,address)'](node, accounts[1], {
+      from: accounts[0],
+    })
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+
+    const newDiamondResolver = await cloneResolver(diamondResolver)
+    const newResolver = await PublicResolverFacet.at(newDiamondResolver.address)
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), "0x0000000000000000000000000000000000000000")
+
+    await newResolver.methods['setAddr(bytes32,address)'](node, accounts[1], {
+      from: accounts[0],
+    })
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[1])
+
+    await deployWeirdResolver(newDiamondResolver, 123)
+
+    const oldWeird = await TestWeirdResolver.at(resolver.address)
+    const newWeird = await TestWeirdResolver.at(newResolver.address)
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[1])
+    await exceptions.expectFailure(oldWeird.weird(node))
+    assert.equal((await newWeird.weird(node)).toNumber(), 123)
+
+    await removeWeirdResolver(newDiamondResolver)
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[1])
+    await exceptions.expectFailure(oldWeird.weird(node))
+    await exceptions.expectFailure(newWeird.weird(node))
+  })
+
+  it('Can add new function from base', async () => {
+    await resolver.methods['setAddr(bytes32,address)'](node, accounts[1], {
+      from: accounts[0],
+    })
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+
+    const newDiamondResolver = await cloneResolver(diamondResolver)
+    const newResolver = await PublicResolverFacet.at(newDiamondResolver.address)
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), "0x0000000000000000000000000000000000000000")
+
+    await newResolver.methods['setAddr(bytes32,address)'](node, accounts[1], {
+      from: accounts[0],
+    })
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[1])
+
+    await deployWeirdResolver(diamondResolver, 234)
+
+    const oldWeird = await TestWeirdResolver.at(resolver.address)
+    const newWeird = await TestWeirdResolver.at(newResolver.address)
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal((await oldWeird.weird(node)).toNumber(), 234)
+    assert.equal((await newWeird.weird(node)).toNumber(), 234)
+
+    await deployWeirdResolver(newResolver, 456)
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal((await oldWeird.weird(node)).toNumber(), 234)
+    assert.equal((await newWeird.weird(node)).toNumber(), 456)
+
+    await removeWeirdResolver(diamondResolver)
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[1])
+    await exceptions.expectFailure(oldWeird.weird(node))
+    assert.equal((await newWeird.weird(node)).toNumber(), 456)
+
+    await removeWeirdResolver(newResolver)
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[1])
+    await exceptions.expectFailure(oldWeird.weird(node))
+    await exceptions.expectFailure(newWeird.weird(node))
   })
 })
 

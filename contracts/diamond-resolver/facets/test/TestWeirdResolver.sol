@@ -8,15 +8,16 @@ contract TestWeirdResolver is
     DiamondResolverUtil,
     IERC165
 {
-    string private weirdConst;
+    // Only immutable works
+    uint256 immutable weirdConst;
 
-    constructor(string memory _weirdConst) {
+    constructor(uint256 _weirdConst) {
         weirdConst = _weirdConst;
     }
 
     function weird(
         bytes32 node
-    ) external virtual view returns(string memory) {
+    ) external virtual view returns(uint256) {
         return weirdConst;
     }
 
