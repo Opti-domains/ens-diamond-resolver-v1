@@ -8,15 +8,24 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer, owner } = await getNamedAccounts()
 
   const registry = await ethers.getContract('ENSRegistry', owner)
-  const nameWrapper = await ethers.getContract('NameWrapper', owner)
-  const controller = await ethers.getContract('ETHRegistrarController', owner)
-  const reverseRegistrar = await ethers.getContract('ReverseRegistrar', owner)
+  const nameWrapper = await ethers.getContract('OptiDomains', owner)
+
+  const registryDeployArgs = {
+    from: deployer,
+    args: [
+      registry.address,
+    ],
+    log: true,
+  }
+
+  const nameWrapperRegistryDeployment = await deploy('NameWrapperRegistry', registryDeployArgs)
+  if (!nameWrapperRegistryDeployment.newlyDeployed) return
 
   const deployArgs = {
     from: deployer,
     args: [
-      registry.address,
-      nameWrapper.address,
+      deployer,
+      nameWrapperRegistryDeployment.address,
     ],
     log: true,
   }
@@ -24,11 +33,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const resolverDeployment = await deploy('DiamondResolver', deployArgs)
   if (!resolverDeployment.newlyDeployed) return
 
+  const nameWrapperRegistry = await ethers.getContract('NameWrapperRegistry', owner)
   const diamondResolver = await ethers.getContract('DiamondResolver', owner)
 
-  // Whitelist controller and reverseRegistrar
-  // await (await diamondResolver.setWhitelisted(controller.address, true)).wait()
-  // await (await diamondResolver.setWhitelisted(reverseRegistrar.address, true)).wait()
+  await (await nameWrapperRegistry.upgrade('0x0000000000000000000000000000000000000000', nameWrapper.address)).wait()
 }
 
 func.id = 'diamond-resolver'

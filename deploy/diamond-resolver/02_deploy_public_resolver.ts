@@ -31,6 +31,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     ethers.utils.id("interfaceImplementer(bytes32,bytes4)").substring(0, 10),
     ethers.utils.id("name(bytes32)").substring(0, 10),
     ethers.utils.id("pubkey(bytes32)").substring(0, 10),
+    ethers.utils.id("resolve(bytes,bytes)").substring(0, 10),
     ethers.utils.id("setABI(bytes32,uint256,bytes)").substring(0, 10),
     ethers.utils.id("setAddr(bytes32,uint256,bytes)").substring(0, 10),
     ethers.utils.id("setAddr(bytes32,address)").substring(0, 10),
@@ -62,6 +63,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     "0x691f3431", // INameResolver
     "0xc8690233", // IPubKeyResolver
     "0x59d1d43c", // ITextResolver
+    "0x9061b923", // IExtendedResolver
   ]
 
   const tx1 = await diamondResolver.connect(ownerSigner).diamondCut(

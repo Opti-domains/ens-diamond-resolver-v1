@@ -53,7 +53,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await tx1.wait()
 
   // Whitelist controller and reverseRegistrar
-  const controller = await ethers.getContract('ETHRegistrarController', owner)
+  const controller = await ethers.getContract('WhitelistRegistrarController', owner)
   const reverseRegistrar = await ethers.getContract('ReverseRegistrar', owner)
 
   const RegistryWhitelistAuthFacet = await ethers.getContractFactory("RegistryWhitelistAuthFacet");
