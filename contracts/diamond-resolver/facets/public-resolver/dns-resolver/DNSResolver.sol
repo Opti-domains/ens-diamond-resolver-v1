@@ -202,7 +202,7 @@ abstract contract DNSResolver is
             ) {
                 _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_COUNT, nameHash)), abi.encode(nameEntriesCount - 1));
             }
-            _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_RECORDS, name, resource)), "");
+            _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_RECORDS, nameHash, resource)), "");
             emit DNSRecordDeleted(node, name, resource);
         } else {
             if (
@@ -210,7 +210,7 @@ abstract contract DNSResolver is
             ) {
                 _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_COUNT, nameHash)), abi.encode(nameEntriesCount + 1));
             }
-            _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_RECORDS, name, resource)), rrData);
+            _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_RECORDS, nameHash, resource)), rrData);
             emit DNSRecordChanged(node, name, resource, rrData);
         }
     }

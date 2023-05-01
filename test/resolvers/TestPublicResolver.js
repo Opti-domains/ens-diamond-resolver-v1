@@ -1495,7 +1495,7 @@ contract('PublicResolver', function (accounts) {
       const interface = new ethers.utils.Interface(abi);
 
       const receipt = await ethers.provider.getTransactionReceipt(tx.tx);
-      const logs = receipt.logs.map(log => interface.parseLog(log));
+      const logs = receipt.logs.filter(x => x.topics[0] != '0x28710dfecab43d1e29e02aa56b2e1e610c0bae19135c9cf7a83a1adb6df96d85').map(log => interface.parseLog(log));
 
       assert.equal(logs.length, 3)
       assert.equal(logs[0].name, 'AddressChanged')
