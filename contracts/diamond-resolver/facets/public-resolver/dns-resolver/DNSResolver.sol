@@ -7,6 +7,10 @@ import "../../../../dnssec-oracle/RRUtils.sol";
 import "./IDNSRecordResolver.sol";
 import "./IDNSZoneResolver.sol";
 
+bytes32 constant DNS_RESOLVER_STORAGE_ZONEHASHES = keccak256("optidomains.resolver.DNSResolverStorage.zonehashes");
+bytes32 constant DNS_RESOLVER_STORAGE_RECORDS = keccak256("optidomains.resolver.DNSResolverStorage.records");
+bytes32 constant DNS_RESOLVER_STORAGE_COUNT = keccak256("optidomains.resolver.DNSResolverStorage.nameEntriesCount");
+
 library DNSResolverStorage {
     struct Layout {
         // Zone hashes for the domains.
@@ -71,7 +75,6 @@ abstract contract DNSResolver is
         bytes memory name;
         bytes memory value;
         bytes32 nameHash;
-        uint64 version = _recordVersions(node);
         // Iterate over the data to add the resource records
         for (
             RRUtils.RRIterator memory iter = data.iterateRRs(0);
@@ -93,8 +96,7 @@ abstract contract DNSResolver is
                         data,
                         offset,
                         iter.offset - offset,
-                        value.length == 0,
-                        version
+                        value.length == 0
                     );
                     resource = iter.dnstype;
                     offset = iter.offset;
@@ -112,8 +114,7 @@ abstract contract DNSResolver is
                 data,
                 offset,
                 data.length - offset,
-                value.length == 0,
-                version
+                value.length == 0
             );
         }
     }
@@ -130,9 +131,7 @@ abstract contract DNSResolver is
         bytes32 name,
         uint16 resource
     ) public view virtual override returns (bytes memory) {
-        DNSResolverStorage.Layout storage l = DNSResolverStorage
-            .layout();
-        return l.versionable_records[_recordVersions(node)][node][name][resource];
+        return _readAttestation(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_RECORDS, name, resource)));
     }
 
     /**
@@ -144,11 +143,9 @@ abstract contract DNSResolver is
         bytes32 node,
         bytes32 name
     ) public view virtual returns (bool) {
-        DNSResolverStorage.Layout storage l = DNSResolverStorage
-            .layout();
-        return (l.versionable_nameEntriesCount[_recordVersions(node)][node][
-            name
-        ] != 0);
+        bytes memory response = _readAttestation(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_COUNT, name)));
+        uint16 count = response.length == 0 ? 0 : abi.decode(response, (uint16));
+        return (count != 0);
     }
 
     /**
@@ -161,13 +158,8 @@ abstract contract DNSResolver is
         bytes32 node,
         bytes calldata hash
     ) external virtual authorised(node) {
-        DNSResolverStorage.Layout storage l = DNSResolverStorage
-            .layout();
-        uint64 currentRecordVersion = _recordVersions(node);
-        bytes memory oldhash = l.versionable_zonehashes[currentRecordVersion][
-            node
-        ];
-        l.versionable_zonehashes[currentRecordVersion][node] = hash;
+        bytes memory oldhash = _readAttestation(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_ZONEHASHES)));
+        _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_ZONEHASHES)), hash);
         emit DNSZonehashChanged(node, oldhash, hash);
     }
 
@@ -179,9 +171,7 @@ abstract contract DNSResolver is
     function zonehash(
         bytes32 node
     ) external view virtual override returns (bytes memory) {
-        DNSResolverStorage.Layout storage l = DNSResolverStorage
-            .layout();
-        return l.versionable_zonehashes[_recordVersions(node)][node];
+        return _readAttestation(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_ZONEHASHES)));
     }
 
     function supportsInterface(
@@ -199,30 +189,28 @@ abstract contract DNSResolver is
         bytes memory data,
         uint256 offset,
         uint256 size,
-        bool deleteRecord,
-        uint64 version
+        bool deleteRecord
     ) private {
-        DNSResolverStorage.Layout storage l = DNSResolverStorage
-            .layout();
         bytes32 nameHash = keccak256(name);
         bytes memory rrData = data.substring(offset, size);
+        bytes memory oldRecords = dnsRecord(node, nameHash, resource);
+        bytes memory nameEntriesCountRaw = _readAttestation(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_COUNT, nameHash)));
+        uint16 nameEntriesCount = nameEntriesCountRaw.length == 0 ? 0 : abi.decode(nameEntriesCountRaw, (uint16));
         if (deleteRecord) {
             if (
-                l.versionable_records[version][node][nameHash][resource].length !=
-                0
+                oldRecords.length != 0
             ) {
-                l.versionable_nameEntriesCount[version][node][nameHash]--;
+                _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_COUNT, nameHash)), abi.encode(nameEntriesCount - 1));
             }
-            delete (l.versionable_records[version][node][nameHash][resource]);
+            _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_RECORDS, name, resource)), "");
             emit DNSRecordDeleted(node, name, resource);
         } else {
             if (
-                l.versionable_records[version][node][nameHash][resource].length ==
-                0
+                oldRecords.length == 0
             ) {
-                l.versionable_nameEntriesCount[version][node][nameHash]++;
+                _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_COUNT, nameHash)), abi.encode(nameEntriesCount + 1));
             }
-            l.versionable_records[version][node][nameHash][resource] = rrData;
+            _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_RECORDS, name, resource)), rrData);
             emit DNSRecordChanged(node, name, resource, rrData);
         }
     }

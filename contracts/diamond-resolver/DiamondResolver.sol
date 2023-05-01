@@ -2,7 +2,6 @@
 pragma solidity >=0.8.17 <0.9.0;
 
 import "./SolidStateDiamond.sol";
-import "./DiamondResolverOverrider.sol";
 import "./Multicallable.sol";
 import "./IDiamondResolver.sol";
 import "./facets/base/IDiamondResolverBase.sol";

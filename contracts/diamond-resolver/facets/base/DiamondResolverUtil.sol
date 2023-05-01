@@ -5,6 +5,8 @@ pragma solidity ^0.8.8;
 import {OwnableStorage} from "@solidstate/contracts/access/ownable/OwnableStorage.sol";
 import "./DiamondResolverBaseStorage.sol";
 import "./IVersionableResolver.sol";
+import "../../INameWrapperRegistry.sol";
+import "../../../attestation/OptiDomainsAttestation.sol";
 
 error NotDiamondOwner();
 
@@ -18,10 +20,24 @@ abstract contract DiamondResolverUtil {
         _;
     }
 
+    function _registry() internal view returns(INameWrapperRegistry) {
+        return IHasNameWrapperRegistry(address(this)).registry();
+    }
+
+    function _attestation() internal view returns(OptiDomainsAttestation) {
+        return OptiDomainsAttestation(_registry().attestation());
+    }
+
+    function _readAttestation(bytes32 node, bytes32 key) internal view returns(bytes memory) {
+        return _attestation().readAttestation(node, key);
+    }
+
+    function _attest(bytes32 node, bytes32 key, bytes memory value) internal {
+        _attestation().attest(node, key, value);
+    }
+
     function _recordVersions(bytes32 node) internal view returns (uint64) {
-        DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage
-            .layout();
-        return l.recordVersions[node];
+        return _attestation().readVersion(node);
     }
 
     /**
@@ -30,10 +46,8 @@ abstract contract DiamondResolverUtil {
      * @param node The node to update.
      */
     function _clearRecords(bytes32 node) internal virtual {
-        DiamondResolverBaseStorage.Layout storage l = DiamondResolverBaseStorage
-            .layout();
-        l.recordVersions[node]++;
-        emit VersionChanged(node, l.recordVersions[node]);
+        _attestation().increaseVersion(node);
+        emit VersionChanged(node, _recordVersions(node));
     }
 
     function _isAuthorised(bytes32 node) internal view returns (bool) {

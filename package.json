@@ -37,6 +37,7 @@
   "dependencies": {
     "@ensdomains/buffer": "^0.1.1",
     "@ensdomains/dnsprovejs": "^0.4.1",
+    "@eth-optimism/contracts-bedrock": "^0.13.2",
     "@openzeppelin/contracts": "^4.8.2",
     "@solidstate/contracts": "^0.0.54",
     "dns-packet": "^5.5.0",

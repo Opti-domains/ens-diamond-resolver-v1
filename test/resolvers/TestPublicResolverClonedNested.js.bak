@@ -1,5 +1,6 @@
 const ENS = artifacts.require('./registry/ENSRegistry.sol')
 const PublicResolver = artifacts.require('DiamondResolver.sol')
+const OptiDomainsAttestation = artifacts.require('OptiDomainsAttestation.sol')
 const NameWrapperRegistry = artifacts.require('NameWrapperRegistry.sol')
 const NameWrapper = artifacts.require('MockNameWrapper.sol')
 const RegistryWhitelistAuthFacet = artifacts.require('RegistryWhitelistAuthFacet.sol')

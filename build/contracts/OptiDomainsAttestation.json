@@ -1,0 +1,16 @@
+[
+  "constructor(address,address)",
+  "error NotResolver(address,address)",
+  "event AttestationCreated(address indexed,address indexed,bytes32 indexed,bytes)",
+  "function _readAttestation(address,address,bytes32) view returns (bytes)",
+  "function activate()",
+  "function attest(bytes32,bytes32,bytes)",
+  "function attestationActivated() view returns (bool)",
+  "function attestationStation() view returns (address)",
+  "function attestations(address,address,bytes32) view returns (bytes)",
+  "function increaseVersion(bytes32)",
+  "function readAttestation(bytes32,bytes32) view returns (bytes)",
+  "function readAttestation(address,bytes32,bytes32) view returns (bytes)",
+  "function readVersion(bytes32) view returns (uint64)",
+  "function registry() view returns (address)"
+]

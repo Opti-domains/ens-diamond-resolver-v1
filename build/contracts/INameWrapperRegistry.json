@@ -1,7 +1,10 @@
 [
+  "function attestation() view returns (address)",
   "function backward(address) view returns (address)",
   "function ens() view returns (address)",
   "function forward(address) view returns (address)",
   "function isNameWrapper(address) view returns (bool)",
+  "function ownerOf(bytes32) view returns (address)",
+  "function setAttestation(address)",
   "function upgrade(address,address)"
 ]

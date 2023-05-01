@@ -6,6 +6,8 @@ import "../../base/DiamondResolverUtil.sol";
 import "./IAddrResolver.sol";
 import "./IAddressResolver.sol";
 
+bytes32 constant ADDR_RESOLVER_STORAGE = keccak256("optidomains.resolver.AddrResolverStorage");
+
 library AddrResolverStorage {
     struct Layout {
         mapping(uint64 => mapping(bytes32 => mapping(uint256 => bytes))) versionable_addresses;
@@ -63,22 +65,19 @@ abstract contract AddrResolver is
         uint256 coinType,
         bytes memory a
     ) public virtual authorised(node) {
-        AddrResolverStorage.Layout storage l = AddrResolverStorage
-            .layout();
         emit AddressChanged(node, coinType, a);
         if (coinType == COIN_TYPE_ETH) {
             emit AddrChanged(node, bytesToAddress(a));
         }
-        l.versionable_addresses[_recordVersions(node)][node][coinType] = a;
+
+        _attest(node, keccak256(abi.encodePacked(ADDR_RESOLVER_STORAGE, coinType)), a);
     }
 
     function addr(
         bytes32 node,
         uint256 coinType
     ) public view virtual override returns (bytes memory) {
-        AddrResolverStorage.Layout storage l = AddrResolverStorage
-            .layout();
-        return l.versionable_addresses[_recordVersions(node)][node][coinType];
+        return _readAttestation(node, keccak256(abi.encodePacked(ADDR_RESOLVER_STORAGE, coinType)));
     }
 
     function supportsInterface(

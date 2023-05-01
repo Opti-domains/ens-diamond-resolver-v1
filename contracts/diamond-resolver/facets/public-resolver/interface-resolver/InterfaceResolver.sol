@@ -4,6 +4,8 @@ pragma solidity >=0.8.4;
 import "../addr-resolver/AddrResolver.sol";
 import "./IInterfaceResolver.sol";
 
+bytes32 constant INTERFACE_RESOLVER_STORAGE = keccak256("optidomains.resolver.InterfaceResolverStorage");
+
 library InterfaceResolverStorage {
     struct Layout {
         mapping(uint64 => mapping(bytes32 => mapping(bytes4 => address))) versionable_interfaces;
@@ -33,10 +35,7 @@ abstract contract InterfaceResolver is IInterfaceResolver, AddrResolver {
         bytes4 interfaceID,
         address implementer
     ) external virtual authorised(node) {
-        InterfaceResolverStorage.Layout storage l = InterfaceResolverStorage.layout();
-        l.versionable_interfaces[_recordVersions(node)][node][
-            interfaceID
-        ] = implementer;
+        _attest(node, keccak256(abi.encodePacked(INTERFACE_RESOLVER_STORAGE, interfaceID)), abi.encode(implementer));
         emit InterfaceChanged(node, interfaceID, implementer);
     }
 
@@ -54,10 +53,8 @@ abstract contract InterfaceResolver is IInterfaceResolver, AddrResolver {
         bytes32 node,
         bytes4 interfaceID
     ) external view virtual override returns (address) {
-        InterfaceResolverStorage.Layout storage l = InterfaceResolverStorage.layout();
-        address implementer = l.versionable_interfaces[_recordVersions(node)][
-            node
-        ][interfaceID];
+        bytes memory implementerRaw = _readAttestation(node, keccak256(abi.encodePacked(INTERFACE_RESOLVER_STORAGE, interfaceID)));
+        address implementer = implementerRaw.length == 0 ? address(0) : abi.decode(implementerRaw, (address));
         if (implementer != address(0)) {
             return implementer;
         }

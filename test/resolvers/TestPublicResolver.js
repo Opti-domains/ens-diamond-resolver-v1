@@ -1,5 +1,6 @@
 const ENS = artifacts.require('./registry/ENSRegistry.sol')
 const PublicResolver = artifacts.require('DiamondResolver.sol')
+const OptiDomainsAttestation = artifacts.require('OptiDomainsAttestation.sol')
 const NameWrapperRegistry = artifacts.require('NameWrapperRegistry.sol')
 const NameWrapper = artifacts.require('MockNameWrapper.sol')
 const RegistryWhitelistAuthFacet = artifacts.require('RegistryWhitelistAuthFacet.sol')
@@ -129,7 +130,7 @@ async function deployPublicResolverFacet(_diamondResolver) {
 
 contract('PublicResolver', function (accounts) {
   let node
-  let ens, resolver, nameWrapper, auth, diamondResolver
+  let ens, resolver, nameWrapper, auth, diamondResolver, nameWrapperRegistry, attestation
   let account
   let signers
   let result
@@ -143,7 +144,10 @@ contract('PublicResolver', function (accounts) {
 
     nameWrapperRegistry = await NameWrapperRegistry.new(ens.address);
 
-    await (await nameWrapperRegistry.upgrade("0x0000000000000000000000000000000000000000", nameWrapper.address))
+    attestation = await OptiDomainsAttestation.new(nameWrapperRegistry.address, "0xEE36eaaD94d1Cc1d0eccaDb55C38bFfB6Be06C77");
+
+    await nameWrapperRegistry.upgrade("0x0000000000000000000000000000000000000000", nameWrapper.address)
+    await nameWrapperRegistry.setAttestation(attestation.address)
 
     diamondResolver = await PublicResolver.new(
       accounts[0],
@@ -160,6 +164,8 @@ contract('PublicResolver', function (accounts) {
     await ens.setSubnodeOwner('0x0', sha3('eth'), accounts[0], {
       from: accounts[0],
     })
+
+    await ens.setResolver(node, diamondResolver.address)
   })
 
   describe('fallback function', async () => {

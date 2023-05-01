@@ -7,6 +7,7 @@ import "./INameWrapperRegistry.sol";
 
 contract NameWrapperRegistry is INameWrapperRegistry, Ownable, IERC165 {
     ENS public immutable ens;
+    address public attestation;
     mapping(address => bool) public isNameWrapper;
     mapping(INameWrapper => INameWrapper) public forward;
     mapping(INameWrapper => INameWrapper) public backward;
@@ -43,6 +44,19 @@ contract NameWrapperRegistry is INameWrapperRegistry, Ownable, IERC165 {
         }
 
         emit NameWrapperUpgraded(address(_old), address(_new));
+    }
+
+    event SetAttestation(address indexed attestation);
+    function setAttestation(address _attestation) external onlyOwner {
+        attestation = _attestation;
+        emit SetAttestation(attestation);
+    }
+
+    function ownerOf(bytes32 node) public view returns(address owner) {
+        owner = ens.owner(node);
+        if (isNameWrapper[owner]) {
+            owner = INameWrapper(owner).ownerOf(uint256(node));
+        }
     }
 
     function supportsInterface(

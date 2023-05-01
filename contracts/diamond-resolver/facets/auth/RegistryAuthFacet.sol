@@ -7,11 +7,7 @@ import "../../IDiamondResolver.sol";
 
 contract RegistryAuthFacet is DiamondResolverBaseInternal, IDiamondResolverAuth {
     function isAuthorised(address sender, bytes32 node) public virtual view returns (bool) {
-        INameWrapperRegistry registry = IHasNameWrapperRegistry(address(this)).registry();
-        address owner = registry.ens().owner(node);
-        if (registry.isNameWrapper(owner)) {
-            owner = INameWrapper(owner).ownerOf(uint256(node));
-        }
+        address owner = IHasNameWrapperRegistry(address(this)).registry().ownerOf(node);
 
         return
             owner == sender ||

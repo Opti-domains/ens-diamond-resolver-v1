@@ -5,6 +5,8 @@ import { IERC165 } from '@solidstate/contracts/interfaces/IERC165.sol';
 import "../../base/DiamondResolverUtil.sol";
 import "./ITextResolver.sol";
 
+bytes32 constant TEXT_RESOLVER_STORAGE = keccak256("optidomains.resolver.TextResolverStorage");
+
 library TextResolverStorage {
     struct Layout {
         mapping(uint64 => mapping(bytes32 => mapping(string => string))) versionable_texts;
@@ -34,8 +36,7 @@ abstract contract TextResolver is ITextResolver, DiamondResolverUtil, IERC165 {
         string calldata key,
         string calldata value
     ) external virtual authorised(node) {
-        TextResolverStorage.Layout storage l = TextResolverStorage.layout();
-        l.versionable_texts[_recordVersions(node)][node][key] = value;
+        _attest(node, keccak256(abi.encodePacked(TEXT_RESOLVER_STORAGE, key)), abi.encode(value));
         emit TextChanged(node, key, key, value);
     }
 
@@ -49,8 +50,8 @@ abstract contract TextResolver is ITextResolver, DiamondResolverUtil, IERC165 {
         bytes32 node,
         string calldata key
     ) external view virtual override returns (string memory) {
-        TextResolverStorage.Layout storage l = TextResolverStorage.layout();
-        return l.versionable_texts[_recordVersions(node)][node][key];
+        bytes memory response = _readAttestation(node, keccak256(abi.encodePacked(TEXT_RESOLVER_STORAGE, key)));
+        return response.length == 0 ? "" : abi.decode(response, (string));
     }
 
     function supportsInterface(

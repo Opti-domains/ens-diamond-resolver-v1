@@ -5,6 +5,8 @@ import { IERC165 } from '@solidstate/contracts/interfaces/IERC165.sol';
 import "../../base/DiamondResolverUtil.sol";
 import "./IABIResolver.sol";
 
+bytes32 constant ABI_RESOLVER_STORAGE = keccak256("optidomains.resolver.ABIResolverStorage");
+
 library ABIResolverStorage {
     struct Layout {
         mapping(uint64 => mapping(bytes32 => mapping(uint256 => bytes))) versionable_abis;
@@ -38,9 +40,8 @@ abstract contract ABIResolver is IABIResolver, DiamondResolverUtil, IERC165 {
         // Content types must be powers of 2
         require(((contentType - 1) & contentType) == 0);
 
-        ABIResolverStorage.Layout storage l = ABIResolverStorage
-            .layout();
-        l.versionable_abis[_recordVersions(node)][node][contentType] = data;
+        _attest(node, keccak256(abi.encodePacked(ABI_RESOLVER_STORAGE, contentType)), data);
+
         emit ABIChanged(node, contentType);
     }
 
@@ -56,22 +57,17 @@ abstract contract ABIResolver is IABIResolver, DiamondResolverUtil, IERC165 {
         bytes32 node,
         uint256 contentTypes
     ) external view virtual override returns (uint256, bytes memory) {
-        ABIResolverStorage.Layout storage l = ABIResolverStorage
-            .layout();
-        mapping(uint256 => bytes) storage abiset = l.versionable_abis[
-            _recordVersions(node)
-        ][node];
-
         for (
             uint256 contentType = 1;
             contentType <= contentTypes;
             contentType <<= 1
         ) {
+            bytes memory data = _readAttestation(node, keccak256(abi.encodePacked(ABI_RESOLVER_STORAGE, contentType)));
             if (
                 (contentType & contentTypes) != 0 &&
-                abiset[contentType].length > 0
+                data.length > 0
             ) {
-                return (contentType, abiset[contentType]);
+                return (contentType, data);
             }
         }
 

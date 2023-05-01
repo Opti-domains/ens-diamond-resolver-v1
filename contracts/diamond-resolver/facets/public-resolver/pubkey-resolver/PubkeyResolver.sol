@@ -5,6 +5,8 @@ import { IERC165 } from '@solidstate/contracts/interfaces/IERC165.sol';
 import "../../base/DiamondResolverUtil.sol";
 import "./IPubkeyResolver.sol";
 
+bytes32 constant PUBKEY_RESOLVER_STORAGE = keccak256("optidomains.resolver.PubkeyResolverStorage");
+
 library PubkeyResolverStorage {
     struct PublicKey {
         bytes32 x;
@@ -27,6 +29,11 @@ library PubkeyResolverStorage {
 }
 
 abstract contract PubkeyResolver is IPubkeyResolver, DiamondResolverUtil, IERC165 {
+    struct PublicKey {
+        bytes32 x;
+        bytes32 y;
+    }
+
     /**
      * Sets the SECP256k1 public key associated with an ENS node.
      * @param node The ENS node to query
@@ -38,8 +45,7 @@ abstract contract PubkeyResolver is IPubkeyResolver, DiamondResolverUtil, IERC16
         bytes32 x,
         bytes32 y
     ) external virtual authorised(node) {
-        PubkeyResolverStorage.Layout storage l = PubkeyResolverStorage.layout();
-        l.versionable_pubkeys[_recordVersions(node)][node] = PubkeyResolverStorage.PublicKey(x, y);
+        _attest(node, keccak256(abi.encodePacked(PUBKEY_RESOLVER_STORAGE)), abi.encode(PublicKey(x, y)));
         emit PubkeyChanged(node, x, y);
     }
 
@@ -53,11 +59,12 @@ abstract contract PubkeyResolver is IPubkeyResolver, DiamondResolverUtil, IERC16
     function pubkey(
         bytes32 node
     ) external view virtual override returns (bytes32 x, bytes32 y) {
-        PubkeyResolverStorage.Layout storage l = PubkeyResolverStorage.layout();
-        uint64 currentRecordVersion = _recordVersions(node);
+        bytes memory response = _readAttestation(node, keccak256(abi.encodePacked(PUBKEY_RESOLVER_STORAGE)));
+        PublicKey memory key;
+        if (response.length > 0) key = abi.decode(response, (PublicKey));
         return (
-            l.versionable_pubkeys[currentRecordVersion][node].x,
-            l.versionable_pubkeys[currentRecordVersion][node].y
+            key.x,
+            key.y
         );
     }
 
