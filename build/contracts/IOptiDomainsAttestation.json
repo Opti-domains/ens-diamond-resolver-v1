@@ -1,0 +1,9 @@
+[
+  "function attest(bytes32,bytes32,bytes)",
+  "function buildAttestationData(bytes32,bytes32,uint256,bytes) view returns (tuple(address,bytes32,bytes)[])",
+  "function increaseVersion(bytes32)",
+  "function readAttestation(bytes32,bytes32) view returns (bytes)",
+  "function readAttestation(address,bytes32,bytes32) view returns (bytes)",
+  "function readAttestationNV(address,bytes32,bytes32) view returns (bytes)",
+  "function readVersion(bytes32) view returns (uint64)"
+]

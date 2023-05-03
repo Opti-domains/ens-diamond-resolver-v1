@@ -107,6 +107,59 @@ contract OptiDomainsAttestation {
         return readAttestation(address(this), node, key);
     }
 
+    function readAttestationNV(address creator, bytes32 node, bytes32 key) public view returns(bytes memory) {
+        address owner = registry.ownerOf(node);
+        return _readAttestation(creator, owner, keccak256(abi.encodePacked(node, key)));
+    }
+
+    // External attestor
+    function buildAttestationData(bytes32 node, bytes32 key, uint256 flags, bytes memory value) public view returns(AttestationStation.AttestationData[] memory att) {
+        address owner = registry.ownerOf(node);
+
+        require(flags > 0 && flags < 8, "Invalid flags");
+
+        bool useOwner = (flags & 1) > 0;
+        bool useVersion = (flags & 2) > 0;
+        bool useNodeOnly = (flags % 4) > 0;
+
+        uint256 length;
+
+        assembly {
+            // SAFETY: Simple bool-to-int cast.
+            length := add(add(useOwner, useVersion), useNodeOnly)
+        }
+        
+        att = new AttestationStation.AttestationData[](length);
+
+        uint256 i = 0;
+
+        if (useOwner) {
+            att[i++] = AttestationStation.AttestationData({
+                about: owner,
+                key: keccak256(abi.encodePacked(node, key)),
+                val: value
+            });
+        }
+
+        if (useVersion) {
+            uint64 version = _readVersion(owner, node);
+
+            att[i++] = AttestationStation.AttestationData({
+                about: owner,
+                key: keccak256(abi.encodePacked(node, key, version)),
+                val: value
+            });
+        }
+
+        if (useNodeOnly) {
+            att[i++] = AttestationStation.AttestationData({
+                about: address(0),
+                key: keccak256(abi.encodePacked(node, key)),
+                val: value
+            });
+        }
+    }
+
     // Attest by resolver
     function attest(bytes32 node, bytes32 key, bytes memory value) public {
         address resolver = registry.ens().resolver(node);
@@ -116,6 +169,8 @@ contract OptiDomainsAttestation {
 
         address owner = registry.ownerOf(node);
         uint64 version = _readVersion(owner, node);
+
+        // AttestationStation.AttestationData[] memory att = buildAttestationData(node, key, 3, value);
 
         AttestationStation.AttestationData[] memory att = new AttestationStation.AttestationData[](2);
         
