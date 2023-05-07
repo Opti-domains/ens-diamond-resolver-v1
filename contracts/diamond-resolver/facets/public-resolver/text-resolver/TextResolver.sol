@@ -5,7 +5,7 @@ import { IERC165 } from '@solidstate/contracts/interfaces/IERC165.sol';
 import "../../base/DiamondResolverUtil.sol";
 import "./ITextResolver.sol";
 
-bytes32 constant TEXT_RESOLVER_STORAGE = keccak256("optidomains.resolver.TextResolverStorage");
+bytes32 constant TEXT_RESOLVER_SCHEMA = keccak256(abi.encodePacked("bytes32 node,string key,string value", address(0), true));
 
 library TextResolverStorage {
     struct Layout {
@@ -36,7 +36,7 @@ abstract contract TextResolver is ITextResolver, DiamondResolverUtil, IERC165 {
         string calldata key,
         string calldata value
     ) external virtual authorised(node) {
-        _attest(node, keccak256(abi.encodePacked(TEXT_RESOLVER_STORAGE, key)), abi.encode(value));
+        _attest(TEXT_RESOLVER_SCHEMA, keccak256(abi.encodePacked(key)), abi.encode(node, key, value));
         emit TextChanged(node, key, key, value);
     }
 
@@ -50,7 +50,7 @@ abstract contract TextResolver is ITextResolver, DiamondResolverUtil, IERC165 {
         bytes32 node,
         string calldata key
     ) external view virtual override returns (string memory) {
-        bytes memory response = _readAttestation(node, keccak256(abi.encodePacked(TEXT_RESOLVER_STORAGE, key)));
+        bytes memory response = _readAttestation(node, TEXT_RESOLVER_SCHEMA, keccak256(abi.encodePacked(key)));
         return response.length == 0 ? "" : abi.decode(response, (string));
     }
 

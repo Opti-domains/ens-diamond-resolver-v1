@@ -5,7 +5,7 @@ import { IERC165 } from '@solidstate/contracts/interfaces/IERC165.sol';
 import "../../base/DiamondResolverUtil.sol";
 import "./INameResolver.sol";
 
-bytes32 constant NAME_RESOLVER_STORAGE = keccak256("optidomains.resolver.NameResolverStorage");
+bytes32 constant NAME_RESOLVER_SCHEMA = keccak256(abi.encodePacked("bytes32 node,string name", address(0), true));
 
 library NameResolverStorage {
     struct Layout {
@@ -33,7 +33,7 @@ abstract contract NameResolver is INameResolver, DiamondResolverUtil, IERC165 {
         bytes32 node,
         string calldata newName
     ) external virtual authorised(node) {
-        _attest(node, keccak256(abi.encodePacked(NAME_RESOLVER_STORAGE)), abi.encode(newName));
+        _attest(NAME_RESOLVER_SCHEMA, bytes32(0), abi.encode(node, newName));
         emit NameChanged(node, newName);
     }
 
@@ -46,7 +46,7 @@ abstract contract NameResolver is INameResolver, DiamondResolverUtil, IERC165 {
     function name(
         bytes32 node
     ) external view virtual override returns (string memory) {
-        bytes memory response = _readAttestation(node, keccak256(abi.encodePacked(NAME_RESOLVER_STORAGE)));
+        bytes memory response = _readAttestation(node, NAME_RESOLVER_SCHEMA, bytes32(0));
         return response.length == 0 ? "" : abi.decode(response, (string));
     }
 

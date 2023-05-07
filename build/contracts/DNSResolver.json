@@ -5,6 +5,7 @@
   "event DNSZonehashChanged(bytes32 indexed,bytes,bytes)",
   "event VersionChanged(bytes32 indexed,uint64)",
   "function dnsRecord(bytes32,bytes32,uint16) view returns (bytes)",
+  "function dnsRecordsCount(bytes32,bytes32) view returns (uint16)",
   "function hasDNSRecords(bytes32,bytes32) view returns (bool)",
   "function setDNSRecords(bytes32,bytes)",
   "function setZonehash(bytes32,bytes)",

@@ -5,7 +5,7 @@ import { IERC165 } from '@solidstate/contracts/interfaces/IERC165.sol';
 import "../../base/DiamondResolverUtil.sol";
 import "./IABIResolver.sol";
 
-bytes32 constant ABI_RESOLVER_STORAGE = keccak256("optidomains.resolver.ABIResolverStorage");
+bytes32 constant ABI_RESOLVER_SCHEMA = keccak256(abi.encodePacked("bytes32 node,uint256 contentType,bytes abi", address(0), true));
 
 library ABIResolverStorage {
     struct Layout {
@@ -40,7 +40,7 @@ abstract contract ABIResolver is IABIResolver, DiamondResolverUtil, IERC165 {
         // Content types must be powers of 2
         require(((contentType - 1) & contentType) == 0);
 
-        _attest(node, keccak256(abi.encodePacked(ABI_RESOLVER_STORAGE, contentType)), data);
+        _attest(ABI_RESOLVER_SCHEMA, bytes32(contentType), abi.encode(node, contentType, data));
 
         emit ABIChanged(node, contentType);
     }
@@ -62,7 +62,7 @@ abstract contract ABIResolver is IABIResolver, DiamondResolverUtil, IERC165 {
             contentType <= contentTypes;
             contentType <<= 1
         ) {
-            bytes memory data = _readAttestation(node, keccak256(abi.encodePacked(ABI_RESOLVER_STORAGE, contentType)));
+            bytes memory data = _readAttestation(node, ABI_RESOLVER_SCHEMA, bytes32(contentType));
             if (
                 (contentType & contentTypes) != 0 &&
                 data.length > 0

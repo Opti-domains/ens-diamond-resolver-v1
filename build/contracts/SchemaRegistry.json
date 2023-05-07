@@ -1,0 +1,7 @@
+[
+  "error AlreadyExists()",
+  "event Registered(bytes32 indexed,address)",
+  "function VERSION() view returns (string)",
+  "function getSchema(bytes32) view returns (tuple(bytes32,address,bool,string))",
+  "function register(string,address,bool) returns (bytes32)"
+]

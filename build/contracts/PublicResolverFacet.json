@@ -17,6 +17,7 @@
   "function addr(bytes32,uint256) view returns (bytes)",
   "function contenthash(bytes32) view returns (bytes)",
   "function dnsRecord(bytes32,bytes32,uint16) view returns (bytes)",
+  "function dnsRecordsCount(bytes32,bytes32) view returns (uint16)",
   "function hasDNSRecords(bytes32,bytes32) view returns (bool)",
   "function interfaceImplementer(bytes32,bytes4) view returns (address)",
   "function name(bytes32) view returns (string)",

@@ -21,6 +21,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const nameWrapperRegistryDeployment = await deploy('NameWrapperRegistry', registryDeployArgs)
   if (!nameWrapperRegistryDeployment.newlyDeployed) return
 
+  const attestationDeployArgs = {
+    from: deployer,
+    args: [
+      nameWrapperRegistryDeployment.address,
+      '0xEE36eaaD94d1Cc1d0eccaDb55C38bFfB6Be06C77'
+    ],
+    log: true,
+  }
+
+  const optiDomainsAttestation = await deploy('OptiDomainsAttestation', attestationDeployArgs)
+
   const deployArgs = {
     from: deployer,
     args: [
@@ -37,6 +48,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const diamondResolver = await ethers.getContract('DiamondResolver', owner)
 
   await (await nameWrapperRegistry.upgrade('0x0000000000000000000000000000000000000000', nameWrapper.address)).wait()
+  await (await nameWrapperRegistry.setAttestation(optiDomainsAttestation.address)).wait()
 }
 
 func.id = 'diamond-resolver'

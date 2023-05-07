@@ -7,6 +7,10 @@ import "../../../../dnssec-oracle/RRUtils.sol";
 import "./IDNSRecordResolver.sol";
 import "./IDNSZoneResolver.sol";
 
+bytes32 constant DNS_RESOLVER_SCHEMA_ZONEHASHES = keccak256(abi.encodePacked("bytes32 node,bytes zonehashes", address(0), true));
+bytes32 constant DNS_RESOLVER_SCHEMA_RECORDS = keccak256(abi.encodePacked("bytes32 node,bytes32 nameHash,uint16 resource,bytes data", address(0), true));
+bytes32 constant DNS_RESOLVER_SCHEMA_COUNT = keccak256(abi.encodePacked("bytes32 node,bytes32 nameHash,uint16 count", address(0), true));
+
 bytes32 constant DNS_RESOLVER_STORAGE_ZONEHASHES = keccak256("optidomains.resolver.DNSResolverStorage.zonehashes");
 bytes32 constant DNS_RESOLVER_STORAGE_RECORDS = keccak256("optidomains.resolver.DNSResolverStorage.records");
 bytes32 constant DNS_RESOLVER_STORAGE_COUNT = keccak256("optidomains.resolver.DNSResolverStorage.nameEntriesCount");
@@ -131,7 +135,24 @@ abstract contract DNSResolver is
         bytes32 name,
         uint16 resource
     ) public view virtual override returns (bytes memory) {
-        return _readAttestation(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_RECORDS, name, resource)));
+        bytes memory response = _readAttestation(node, DNS_RESOLVER_SCHEMA_RECORDS, keccak256(abi.encodePacked(name, resource)));
+        if (response.length == 0) {
+            return "";
+        }
+        (,, bytes memory record) = abi.decode(response, (bytes32, uint16, bytes));
+        return record;
+    }
+
+    function dnsRecordsCount(
+        bytes32 node,
+        bytes32 name
+    ) public view virtual returns (uint16) {
+        bytes memory response = _readAttestation(node, DNS_RESOLVER_SCHEMA_COUNT, name);
+        if (response.length == 0) {
+            return 0;
+        }
+        (, uint16 count) = abi.decode(response, (bytes32, uint16));
+        return count;
     }
 
     /**
@@ -143,9 +164,7 @@ abstract contract DNSResolver is
         bytes32 node,
         bytes32 name
     ) public view virtual returns (bool) {
-        bytes memory response = _readAttestation(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_COUNT, name)));
-        uint16 count = response.length == 0 ? 0 : abi.decode(response, (uint16));
-        return (count != 0);
+        return dnsRecordsCount(node, name) != 0;
     }
 
     /**
@@ -158,8 +177,8 @@ abstract contract DNSResolver is
         bytes32 node,
         bytes calldata hash
     ) external virtual authorised(node) {
-        bytes memory oldhash = _readAttestation(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_ZONEHASHES)));
-        _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_ZONEHASHES)), hash);
+        bytes memory oldhash = _readAttestation(node, DNS_RESOLVER_SCHEMA_ZONEHASHES, bytes32(0));
+        _attest(DNS_RESOLVER_SCHEMA_ZONEHASHES, bytes32(0), abi.encode(node, hash));
         emit DNSZonehashChanged(node, oldhash, hash);
     }
 
@@ -171,7 +190,7 @@ abstract contract DNSResolver is
     function zonehash(
         bytes32 node
     ) external view virtual override returns (bytes memory) {
-        return _readAttestation(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_ZONEHASHES)));
+        return _readAttestation(node, DNS_RESOLVER_SCHEMA_ZONEHASHES, bytes32(0));
     }
 
     function supportsInterface(
@@ -194,23 +213,22 @@ abstract contract DNSResolver is
         bytes32 nameHash = keccak256(name);
         bytes memory rrData = data.substring(offset, size);
         bytes memory oldRecords = dnsRecord(node, nameHash, resource);
-        bytes memory nameEntriesCountRaw = _readAttestation(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_COUNT, nameHash)));
-        uint16 nameEntriesCount = nameEntriesCountRaw.length == 0 ? 0 : abi.decode(nameEntriesCountRaw, (uint16));
+        uint16 nameEntriesCount = dnsRecordsCount(node, nameHash);
         if (deleteRecord) {
             if (
                 oldRecords.length != 0
             ) {
-                _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_COUNT, nameHash)), abi.encode(nameEntriesCount - 1));
+                _attest(DNS_RESOLVER_SCHEMA_COUNT, nameHash, abi.encode(node, nameHash, nameEntriesCount - 1));
             }
-            _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_RECORDS, nameHash, resource)), "");
+            _revokeAttestation(node, DNS_RESOLVER_SCHEMA_RECORDS, keccak256(abi.encodePacked(nameHash, resource)), false);
             emit DNSRecordDeleted(node, name, resource);
         } else {
             if (
                 oldRecords.length == 0
             ) {
-                _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_COUNT, nameHash)), abi.encode(nameEntriesCount + 1));
+                _attest(DNS_RESOLVER_SCHEMA_COUNT, nameHash, abi.encode(node, nameHash, nameEntriesCount + 1));
             }
-            _attest(node, keccak256(abi.encodePacked(DNS_RESOLVER_STORAGE_RECORDS, nameHash, resource)), rrData);
+            _attest(DNS_RESOLVER_SCHEMA_RECORDS, keccak256(abi.encodePacked(nameHash, resource)), abi.encode(node, nameHash, resource, rrData));
             emit DNSRecordChanged(node, name, resource, rrData);
         }
     }

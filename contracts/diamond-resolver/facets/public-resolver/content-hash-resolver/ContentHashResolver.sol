@@ -5,7 +5,7 @@ import { IERC165 } from '@solidstate/contracts/interfaces/IERC165.sol';
 import "../../base/DiamondResolverUtil.sol";
 import "./IContentHashResolver.sol";
 
-bytes32 constant CONTENT_HASH_RESOLVER_STORAGE = keccak256("optidomains.resolver.ContentHashResolverStorage");
+bytes32 constant CONTENT_RESOLVER_SCHEMA = keccak256(abi.encodePacked("bytes32 node,bytes hash", address(0), true));
 
 library ContentHashResolverStorage {
     struct Layout {
@@ -34,7 +34,7 @@ abstract contract ContentHashResolver is IContentHashResolver, DiamondResolverUt
         bytes32 node,
         bytes calldata hash
     ) external virtual authorised(node) {
-        _attest(node, keccak256(abi.encodePacked(CONTENT_HASH_RESOLVER_STORAGE)), hash);
+        _attest(CONTENT_RESOLVER_SCHEMA, bytes32(0), abi.encode(node, hash));
         emit ContenthashChanged(node, hash);
     }
 
@@ -46,7 +46,7 @@ abstract contract ContentHashResolver is IContentHashResolver, DiamondResolverUt
     function contenthash(
         bytes32 node
     ) external view virtual override returns (bytes memory) {
-        return _readAttestation(node, keccak256(abi.encodePacked(CONTENT_HASH_RESOLVER_STORAGE)));
+        return _readAttestation(node, CONTENT_RESOLVER_SCHEMA, bytes32(0));
     }
 
     function supportsInterface(

@@ -28,12 +28,28 @@ abstract contract DiamondResolverUtil {
         return OptiDomainsAttestation(_registry().attestation());
     }
 
-    function _readAttestation(bytes32 node, bytes32 key) internal view returns(bytes memory) {
-        return _attestation().readAttestation(node, key);
+    function _readAttestation(bytes32 node, bytes32 schema, bytes32 key, bool toDomain) internal view returns(bytes memory) {
+        return _attestation().read(node, schema, key, toDomain);
     }
 
-    function _attest(bytes32 node, bytes32 key, bytes memory value) internal {
-        _attestation().attest(node, key, value);
+    function _readAttestation(bytes32 node, bytes32 schema, bytes32 key) internal view returns(bytes memory) {
+        return _attestation().read(node, schema, key);
+    }
+
+    function _attest(bytes32 schema, bytes32 key, bytes32 ref, bool toDomain, bytes memory value) internal {
+        _attestation().attest(schema, key, ref, toDomain, value);
+    }
+
+    function _attest(bytes32 schema, bytes32 key, bytes32 ref, bytes memory value) internal {
+        _attestation().attest(schema, key, ref, value);
+    }
+
+    function _attest(bytes32 schema, bytes32 key, bytes memory value) internal {
+        _attestation().attest(schema, key, value);
+    }
+
+    function _revokeAttestation(bytes32 node, bytes32 schema, bytes32 key, bool toDomain) internal {
+        _attestation().revoke(node, schema, key, toDomain);
     }
 
     function _recordVersions(bytes32 node) internal view returns (uint64) {

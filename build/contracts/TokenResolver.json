@@ -1,0 +1,13 @@
+[
+  "constructor(address,address,uint256)",
+  "error AccessDenied()",
+  "error InsufficientValue()",
+  "error InvalidEAS()",
+  "error NotPayable()",
+  "function VERSION() view returns (string)",
+  "function attest(tuple(bytes32,bytes32,uint64,uint64,uint64,bytes32,address,address,bool,bytes)) payable returns (bool)",
+  "function isPayable() pure returns (bool)",
+  "function multiAttest(tuple(bytes32,bytes32,uint64,uint64,uint64,bytes32,address,address,bool,bytes)[],uint256[]) payable returns (bool)",
+  "function multiRevoke(tuple(bytes32,bytes32,uint64,uint64,uint64,bytes32,address,address,bool,bytes)[],uint256[]) payable returns (bool)",
+  "function revoke(tuple(bytes32,bytes32,uint64,uint64,uint64,bytes32,address,address,bool,bytes)) payable returns (bool)"
+]

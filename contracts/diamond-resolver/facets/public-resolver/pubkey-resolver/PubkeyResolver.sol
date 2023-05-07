@@ -6,6 +6,7 @@ import "../../base/DiamondResolverUtil.sol";
 import "./IPubkeyResolver.sol";
 
 bytes32 constant PUBKEY_RESOLVER_STORAGE = keccak256("optidomains.resolver.PubkeyResolverStorage");
+bytes32 constant PUBKEY_RESOLVER_SCHEMA = keccak256(abi.encodePacked("bytes32 node,bytes32 x,bytes32 y", address(0), true));
 
 library PubkeyResolverStorage {
     struct PublicKey {
@@ -45,7 +46,7 @@ abstract contract PubkeyResolver is IPubkeyResolver, DiamondResolverUtil, IERC16
         bytes32 x,
         bytes32 y
     ) external virtual authorised(node) {
-        _attest(node, keccak256(abi.encodePacked(PUBKEY_RESOLVER_STORAGE)), abi.encode(PublicKey(x, y)));
+        _attest(PUBKEY_RESOLVER_SCHEMA, bytes32(0), abi.encode(node, x, y));
         emit PubkeyChanged(node, x, y);
     }
 
@@ -59,13 +60,10 @@ abstract contract PubkeyResolver is IPubkeyResolver, DiamondResolverUtil, IERC16
     function pubkey(
         bytes32 node
     ) external view virtual override returns (bytes32 x, bytes32 y) {
-        bytes memory response = _readAttestation(node, keccak256(abi.encodePacked(PUBKEY_RESOLVER_STORAGE)));
-        PublicKey memory key;
-        if (response.length > 0) key = abi.decode(response, (PublicKey));
-        return (
-            key.x,
-            key.y
-        );
+        bytes memory response = _readAttestation(node, PUBKEY_RESOLVER_SCHEMA, bytes32(0));
+        if (response.length > 0) {
+            (x, y) = abi.decode(response, (bytes32, bytes32));
+        }
     }
 
     function supportsInterface(

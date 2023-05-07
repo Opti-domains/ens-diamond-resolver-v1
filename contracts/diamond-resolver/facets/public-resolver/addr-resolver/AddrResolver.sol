@@ -6,7 +6,7 @@ import "../../base/DiamondResolverUtil.sol";
 import "./IAddrResolver.sol";
 import "./IAddressResolver.sol";
 
-bytes32 constant ADDR_RESOLVER_STORAGE = keccak256("optidomains.resolver.AddrResolverStorage");
+bytes32 constant ADDR_RESOLVER_SCHEMA = keccak256(abi.encodePacked("bytes32 node,uint256 coinType,bytes address", address(0), true));
 
 library AddrResolverStorage {
     struct Layout {
@@ -70,14 +70,14 @@ abstract contract AddrResolver is
             emit AddrChanged(node, bytesToAddress(a));
         }
 
-        _attest(node, keccak256(abi.encodePacked(ADDR_RESOLVER_STORAGE, coinType)), a);
+        _attest(ADDR_RESOLVER_SCHEMA, bytes32(coinType), abi.encode(node, coinType, a));
     }
 
     function addr(
         bytes32 node,
         uint256 coinType
     ) public view virtual override returns (bytes memory) {
-        return _readAttestation(node, keccak256(abi.encodePacked(ADDR_RESOLVER_STORAGE, coinType)));
+        return _readAttestation(node, ADDR_RESOLVER_SCHEMA, bytes32(coinType));
     }
 
     function supportsInterface(

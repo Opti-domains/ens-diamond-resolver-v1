@@ -1,0 +1,7 @@
+[
+  "function getAttestTypeHash() pure returns (bytes32)",
+  "function getDomainSeparator() view returns (bytes32)",
+  "function getName() view returns (string)",
+  "function getNonce(address) view returns (uint256)",
+  "function getRevokeTypeHash() pure returns (bytes32)"
+]
