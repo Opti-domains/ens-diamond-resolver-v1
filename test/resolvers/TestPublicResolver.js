@@ -145,7 +145,7 @@ async function registerSchema(schemaRegistry) {
 
 contract('PublicResolver', function (accounts) {
   let node
-  let ens, resolver, nameWrapper, auth, diamondResolver, nameWrapperRegistry, attestation
+  let ens, resolver, nameWrapper, auth, diamondResolver, nameWrapperRegistry, attestation, schemaRegistry, eas
   let account
   let signers
   let result
@@ -1517,7 +1517,10 @@ contract('PublicResolver', function (accounts) {
       const interface = new ethers.utils.Interface(abi);
 
       const receipt = await ethers.provider.getTransactionReceipt(tx.tx);
-      const logs = receipt.logs.filter(x => x.topics[0] != '0x28710dfecab43d1e29e02aa56b2e1e610c0bae19135c9cf7a83a1adb6df96d85').map(log => interface.parseLog(log));
+      // console.log(receipt.logs)
+      const logs = receipt.logs.filter(x => 
+        x.topics[0] != '0x8bf46bf4cfd674fa735a3d63ec1c9ad4153f033c290341f3a588b75685141b35' &&
+        x.topics[0] != '0x2c70793990cd218759ebeebe6f7f8a216e084c0f7f622241189e39507a86323c').map(log => interface.parseLog(log));
 
       assert.equal(logs.length, 3)
       assert.equal(logs[0].name, 'AddressChanged')

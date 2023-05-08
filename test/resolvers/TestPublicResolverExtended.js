@@ -1,5 +1,7 @@
 const ENS = artifacts.require('./registry/ENSRegistry.sol')
 const PublicResolver = artifacts.require('DiamondResolver.sol')
+const EAS = artifacts.require('EAS.sol')
+const SchemaRegistry = artifacts.require('SchemaRegistry.sol')
 const OptiDomainsAttestation = artifacts.require('OptiDomainsAttestation.sol')
 const NameWrapperRegistry = artifacts.require('NameWrapperRegistry.sol')
 const NameWrapper = artifacts.require('MockNameWrapper.sol')
@@ -342,12 +344,32 @@ async function cloneResolver(diamondResolver) {
   return newResolver
 }
 
+async function registerSchema(schemaRegistry) {
+  await schemaRegistry.register("bytes32 node,uint256 contentType,bytes abi", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,uint256 coinType,bytes address", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,bytes hash", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,bytes zonehashes", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,bytes32 nameHash,uint16 resource,bytes data", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,bytes32 nameHash,uint16 count", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,bytes4 interfaceID,address implementer", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,string name", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,string key,string value", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,bytes32 x,bytes32 y", "0x0000000000000000000000000000000000000000", true);
+}
+
 contract('PublicResolver', function (accounts) {
   let node
-  let ens, resolver, nameWrapper, auth, diamondResolver
+  let ens, resolver, nameWrapper, auth, diamondResolver, nameWrapperRegistry, attestation, schemaRegistry, eas
   let account
   let signers
   let result
+
+  before(async () => {
+    schemaRegistry = await SchemaRegistry.new()
+    eas = await EAS.new(schemaRegistry.address)
+
+    await registerSchema(schemaRegistry);
+  })
 
   beforeEach(async () => {
     signers = await ethers.getSigners()
@@ -357,8 +379,11 @@ contract('PublicResolver', function (accounts) {
     nameWrapper = await NameWrapper.new()
 
     nameWrapperRegistry = await NameWrapperRegistry.new(ens.address);
+    attestation = await OptiDomainsAttestation.new(nameWrapperRegistry.address, accounts[0]);
 
-    await (await nameWrapperRegistry.upgrade("0x0000000000000000000000000000000000000000", nameWrapper.address))
+    await attestation.activate(eas.address)
+    await nameWrapperRegistry.upgrade("0x0000000000000000000000000000000000000000", nameWrapper.address)
+    await nameWrapperRegistry.setAttestation(attestation.address)
 
     diamondResolver = await PublicResolver.new(
       accounts[0],
@@ -375,6 +400,8 @@ contract('PublicResolver', function (accounts) {
     await ens.setSubnodeOwner('0x0', sha3('eth'), accounts[0], {
       from: accounts[0],
     })
+
+    await ens.setResolver(node, diamondResolver.address)
   })
 
   it('Can clone DiamondResolver', async () => {
@@ -391,25 +418,27 @@ contract('PublicResolver', function (accounts) {
     const newDiamondResolver = await cloneResolver(diamondResolver)
     const newResolver = await PublicResolverFacet.at(newDiamondResolver.address)
 
-    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
-    assert.equal(await newResolver.methods['addr(bytes32)'](node), "0x0000000000000000000000000000000000000000")
-
-    await newResolver.methods['setAddr(bytes32,address)'](node, accounts[1], {
-      from: accounts[0],
-    })
+    await ens.setResolver(node, newResolver.address)
 
     assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
     assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[1])
 
+    await newResolver.methods['setAddr(bytes32,address)'](node, accounts[0], {
+      from: accounts[0],
+    })
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[0])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[0])
+
     await deployTestAddrResolver(newDiamondResolver)
 
-    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[0])
     assert.equal(await newResolver.methods['addr(bytes32)'](node), "0x0000000000000000000000000000000000000001")
 
     await removeTestAddrResolver(newDiamondResolver)
 
-    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
-    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[0])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[0])
   })
 
   it('Can apply override existing function from base', async () => {
@@ -421,15 +450,17 @@ contract('PublicResolver', function (accounts) {
     const newDiamondResolver = await cloneResolver(diamondResolver)
     const newResolver = await PublicResolverFacet.at(newDiamondResolver.address)
 
-    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
-    assert.equal(await newResolver.methods['addr(bytes32)'](node), "0x0000000000000000000000000000000000000000")
-
-    await newResolver.methods['setAddr(bytes32,address)'](node, accounts[1], {
-      from: accounts[0],
-    })
+    await ens.setResolver(node, newResolver.address)
 
     assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
     assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[1])
+
+    await newResolver.methods['setAddr(bytes32,address)'](node, accounts[0], {
+      from: accounts[0],
+    })
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[0])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[0])
 
     await deployTestAddrResolver(diamondResolver, 1)
 
@@ -438,16 +469,18 @@ contract('PublicResolver', function (accounts) {
   })
 
   it('Can add new function', async () => {
-    await resolver.methods['setAddr(bytes32,address)'](node, accounts[1], {
+    await resolver.methods['setAddr(bytes32,address)'](node, accounts[0], {
       from: accounts[0],
     })
-    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[0])
 
     const newDiamondResolver = await cloneResolver(diamondResolver)
     const newResolver = await PublicResolverFacet.at(newDiamondResolver.address)
 
-    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
-    assert.equal(await newResolver.methods['addr(bytes32)'](node), "0x0000000000000000000000000000000000000000")
+    await ens.setResolver(node, newResolver.address)
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[0])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[0])
 
     await newResolver.methods['setAddr(bytes32,address)'](node, accounts[1], {
       from: accounts[0],
@@ -475,16 +508,18 @@ contract('PublicResolver', function (accounts) {
   })
 
   it('Can add new function from base', async () => {
-    await resolver.methods['setAddr(bytes32,address)'](node, accounts[1], {
+    await resolver.methods['setAddr(bytes32,address)'](node, accounts[0], {
       from: accounts[0],
     })
-    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[0])
 
     const newDiamondResolver = await cloneResolver(diamondResolver)
     const newResolver = await PublicResolverFacet.at(newDiamondResolver.address)
 
-    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
-    assert.equal(await newResolver.methods['addr(bytes32)'](node), "0x0000000000000000000000000000000000000000")
+    await ens.setResolver(node, newResolver.address)
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[0])
+    assert.equal(await newResolver.methods['addr(bytes32)'](node), accounts[0])
 
     await newResolver.methods['setAddr(bytes32,address)'](node, accounts[1], {
       from: accounts[0],
