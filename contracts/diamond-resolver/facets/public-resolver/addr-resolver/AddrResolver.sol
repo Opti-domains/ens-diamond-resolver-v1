@@ -77,7 +77,10 @@ abstract contract AddrResolver is
         bytes32 node,
         uint256 coinType
     ) public view virtual override returns (bytes memory) {
-        return _readAttestation(node, ADDR_RESOLVER_SCHEMA, bytes32(coinType));
+        bytes memory response = _readAttestation(node, ADDR_RESOLVER_SCHEMA, bytes32(coinType));
+        if (response.length == 0) return "";
+        (,, bytes memory a) = abi.decode(response, (bytes32, bytes32, bytes));
+        return a;
     }
 
     function supportsInterface(

@@ -40,7 +40,11 @@ abstract contract ABIResolver is IABIResolver, DiamondResolverUtil, IERC165 {
         // Content types must be powers of 2
         require(((contentType - 1) & contentType) == 0);
 
-        _attest(ABI_RESOLVER_SCHEMA, bytes32(contentType), abi.encode(node, contentType, data));
+        if (data.length == 0) {
+            _revokeAttestation(node, ABI_RESOLVER_SCHEMA, bytes32(contentType), false);
+        } else {
+            _attest(ABI_RESOLVER_SCHEMA, bytes32(contentType), abi.encode(node, contentType, data));
+        }
 
         emit ABIChanged(node, contentType);
     }
@@ -67,7 +71,8 @@ abstract contract ABIResolver is IABIResolver, DiamondResolverUtil, IERC165 {
                 (contentType & contentTypes) != 0 &&
                 data.length > 0
             ) {
-                return (contentType, data);
+                (,, bytes memory a) = abi.decode(data, (bytes32, uint256, bytes));
+                return (contentType, a);
             }
         }
 

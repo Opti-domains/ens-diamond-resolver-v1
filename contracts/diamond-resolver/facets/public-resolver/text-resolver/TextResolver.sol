@@ -44,14 +44,15 @@ abstract contract TextResolver is ITextResolver, DiamondResolverUtil, IERC165 {
      * Returns the text data associated with an ENS node and key.
      * @param node The ENS node to query.
      * @param key The text data key to query.
-     * @return The associated text data.
+     * @return result The associated text data.
      */
     function text(
         bytes32 node,
         string calldata key
-    ) external view virtual override returns (string memory) {
+    ) external view virtual override returns (string memory result) {
         bytes memory response = _readAttestation(node, TEXT_RESOLVER_SCHEMA, keccak256(abi.encodePacked(key)));
-        return response.length == 0 ? "" : abi.decode(response, (string));
+        if (response.length == 0) return "";
+        (,, result) = abi.decode(response, (bytes32, string, string));
     }
 
     function supportsInterface(

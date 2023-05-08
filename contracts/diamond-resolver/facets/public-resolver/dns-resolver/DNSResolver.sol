@@ -11,10 +11,6 @@ bytes32 constant DNS_RESOLVER_SCHEMA_ZONEHASHES = keccak256(abi.encodePacked("by
 bytes32 constant DNS_RESOLVER_SCHEMA_RECORDS = keccak256(abi.encodePacked("bytes32 node,bytes32 nameHash,uint16 resource,bytes data", address(0), true));
 bytes32 constant DNS_RESOLVER_SCHEMA_COUNT = keccak256(abi.encodePacked("bytes32 node,bytes32 nameHash,uint16 count", address(0), true));
 
-bytes32 constant DNS_RESOLVER_STORAGE_ZONEHASHES = keccak256("optidomains.resolver.DNSResolverStorage.zonehashes");
-bytes32 constant DNS_RESOLVER_STORAGE_RECORDS = keccak256("optidomains.resolver.DNSResolverStorage.records");
-bytes32 constant DNS_RESOLVER_STORAGE_COUNT = keccak256("optidomains.resolver.DNSResolverStorage.nameEntriesCount");
-
 library DNSResolverStorage {
     struct Layout {
         // Zone hashes for the domains.
@@ -139,7 +135,7 @@ abstract contract DNSResolver is
         if (response.length == 0) {
             return "";
         }
-        (,, bytes memory record) = abi.decode(response, (bytes32, uint16, bytes));
+        (,,, bytes memory record) = abi.decode(response, (bytes32, bytes32, uint16, bytes));
         return record;
     }
 
@@ -151,7 +147,7 @@ abstract contract DNSResolver is
         if (response.length == 0) {
             return 0;
         }
-        (, uint16 count) = abi.decode(response, (bytes32, uint16));
+        (,, uint16 count) = abi.decode(response, (bytes32, bytes32, uint16));
         return count;
     }
 
@@ -177,7 +173,12 @@ abstract contract DNSResolver is
         bytes32 node,
         bytes calldata hash
     ) external virtual authorised(node) {
-        bytes memory oldhash = _readAttestation(node, DNS_RESOLVER_SCHEMA_ZONEHASHES, bytes32(0));
+        bytes memory oldhashRaw = _readAttestation(node, DNS_RESOLVER_SCHEMA_ZONEHASHES, bytes32(0));
+        bytes memory oldhash;
+        if (oldhashRaw.length > 0) {
+            (, oldhash) = abi.decode(oldhashRaw, (bytes32, bytes));
+        }
+        
         _attest(DNS_RESOLVER_SCHEMA_ZONEHASHES, bytes32(0), abi.encode(node, hash));
         emit DNSZonehashChanged(node, oldhash, hash);
     }
@@ -185,12 +186,14 @@ abstract contract DNSResolver is
     /**
      * zonehash obtains the hash for the zone.
      * @param node The ENS node to query.
-     * @return The associated contenthash.
+     * @return result The associated contenthash.
      */
     function zonehash(
         bytes32 node
-    ) external view virtual override returns (bytes memory) {
-        return _readAttestation(node, DNS_RESOLVER_SCHEMA_ZONEHASHES, bytes32(0));
+    ) external view virtual override returns (bytes memory result) {
+        bytes memory response = _readAttestation(node, DNS_RESOLVER_SCHEMA_ZONEHASHES, bytes32(0));
+        if (response.length == 0) return "";
+        (, result) = abi.decode(response, (bytes32, bytes));
     }
 
     function supportsInterface(

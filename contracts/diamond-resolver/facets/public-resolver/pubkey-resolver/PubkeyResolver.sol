@@ -62,7 +62,7 @@ abstract contract PubkeyResolver is IPubkeyResolver, DiamondResolverUtil, IERC16
     ) external view virtual override returns (bytes32 x, bytes32 y) {
         bytes memory response = _readAttestation(node, PUBKEY_RESOLVER_SCHEMA, bytes32(0));
         if (response.length > 0) {
-            (x, y) = abi.decode(response, (bytes32, bytes32));
+            (, x, y) = abi.decode(response, (bytes32, bytes32, bytes32));
         }
     }
 

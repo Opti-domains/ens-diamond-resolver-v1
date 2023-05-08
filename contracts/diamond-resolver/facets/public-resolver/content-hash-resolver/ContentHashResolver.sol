@@ -46,7 +46,10 @@ abstract contract ContentHashResolver is IContentHashResolver, DiamondResolverUt
     function contenthash(
         bytes32 node
     ) external view virtual override returns (bytes memory) {
-        return _readAttestation(node, CONTENT_RESOLVER_SCHEMA, bytes32(0));
+        bytes memory response = _readAttestation(node, CONTENT_RESOLVER_SCHEMA, bytes32(0));
+        if (response.length == 0) return "";
+        (, bytes memory hash) = abi.decode(response, (bytes32, bytes));
+        return hash;
     }
 
     function supportsInterface(

@@ -41,13 +41,14 @@ abstract contract NameResolver is INameResolver, DiamondResolverUtil, IERC165 {
      * Returns the name associated with an ENS node, for reverse records.
      * Defined in EIP181.
      * @param node The ENS node to query.
-     * @return The associated name.
+     * @return result The associated name.
      */
     function name(
         bytes32 node
-    ) external view virtual override returns (string memory) {
+    ) external view virtual override returns (string memory result) {
         bytes memory response = _readAttestation(node, NAME_RESOLVER_SCHEMA, bytes32(0));
-        return response.length == 0 ? "" : abi.decode(response, (string));
+        if (response.length == 0) return "";
+        (, result) = abi.decode(response, (bytes32, string));
     }
 
     function supportsInterface(

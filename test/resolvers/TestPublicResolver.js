@@ -1,5 +1,7 @@
 const ENS = artifacts.require('./registry/ENSRegistry.sol')
 const PublicResolver = artifacts.require('DiamondResolver.sol')
+const EAS = artifacts.require('EAS.sol')
+const SchemaRegistry = artifacts.require('SchemaRegistry.sol')
 const OptiDomainsAttestation = artifacts.require('OptiDomainsAttestation.sol')
 const NameWrapperRegistry = artifacts.require('NameWrapperRegistry.sol')
 const NameWrapper = artifacts.require('MockNameWrapper.sol')
@@ -128,12 +130,32 @@ async function deployPublicResolverFacet(_diamondResolver) {
   return await PublicResolverFacet.at(diamondResolver.address)
 }
 
+async function registerSchema(schemaRegistry) {
+  await schemaRegistry.register("bytes32 node,uint256 contentType,bytes abi", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,uint256 coinType,bytes address", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,bytes hash", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,bytes zonehashes", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,bytes32 nameHash,uint16 resource,bytes data", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,bytes32 nameHash,uint16 count", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,bytes4 interfaceID,address implementer", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,string name", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,string key,string value", "0x0000000000000000000000000000000000000000", true);
+  await schemaRegistry.register("bytes32 node,bytes32 x,bytes32 y", "0x0000000000000000000000000000000000000000", true);
+}
+
 contract('PublicResolver', function (accounts) {
   let node
   let ens, resolver, nameWrapper, auth, diamondResolver, nameWrapperRegistry, attestation
   let account
   let signers
   let result
+
+  before(async () => {
+    schemaRegistry = await SchemaRegistry.new()
+    eas = await EAS.new(schemaRegistry.address)
+
+    await registerSchema(schemaRegistry);
+  })
 
   beforeEach(async () => {
     signers = await ethers.getSigners()
@@ -143,9 +165,9 @@ contract('PublicResolver', function (accounts) {
     nameWrapper = await NameWrapper.new()
 
     nameWrapperRegistry = await NameWrapperRegistry.new(ens.address);
+    attestation = await OptiDomainsAttestation.new(nameWrapperRegistry.address, accounts[0]);
 
-    attestation = await OptiDomainsAttestation.new(nameWrapperRegistry.address, "0xEE36eaaD94d1Cc1d0eccaDb55C38bFfB6Be06C77");
-
+    await attestation.activate(eas.address)
     await nameWrapperRegistry.upgrade("0x0000000000000000000000000000000000000000", nameWrapper.address)
     await nameWrapperRegistry.setAttestation(attestation.address)
 

@@ -56,7 +56,7 @@ abstract contract InterfaceResolver is IInterfaceResolver, AddrResolver {
         bytes memory implementerRaw = _readAttestation(node, INTERFACE_RESOLVER_SCHEMA, bytes32(interfaceID));
         address implementer;
         if (implementerRaw.length > 0) {
-            (, implementer) = abi.decode(implementerRaw, (bytes4, address));
+            (,, implementer) = abi.decode(implementerRaw, (bytes32, bytes4, address));
         }
         if (implementer != address(0)) {
             return implementer;

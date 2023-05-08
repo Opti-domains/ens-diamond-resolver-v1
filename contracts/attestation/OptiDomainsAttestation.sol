@@ -3,6 +3,7 @@ pragma solidity ^0.8.15;
 
 import {INameWrapperRegistry} from "../diamond-resolver/INameWrapperRegistry.sol";
 import "./eas/EAS.sol";
+import "hardhat/console.sol";
 
 bytes32 constant VERSION_KEY = keccak256("optidomains.resolver.VersionStorage");
 
@@ -265,22 +266,14 @@ contract OptiDomainsAttestation {
             a.attester != address(this) ||
             a.recipient != owner ||
             a.schema != schema ||
-            a.expirationTime < block.timestamp ||
-            a.revocationTime != 0
+            (a.expirationTime > 0 && a.expirationTime < block.timestamp) ||
+            a.revocationTime != 0 ||
+            a.data.length <= 32
         ) {
             return "";
         }
 
-        result = a.data;
-
-        uint256 length = result.length - 32;
-
-        assembly {
-            mstore(add(result, 32), length)
-            result := add(result, 32)
-        }
-
-        return result;
+        return a.data;
     }
 
     function read(
