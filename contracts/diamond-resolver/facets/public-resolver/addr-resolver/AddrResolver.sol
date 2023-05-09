@@ -60,9 +60,10 @@ abstract contract AddrResolver is
         return bytesToAddress(a);
     }
 
-    function setAddr(
+    function setAddrWithRef(
         bytes32 node,
         uint256 coinType,
+        bytes32 ref,
         bytes memory a
     ) public virtual authorised(node) {
         emit AddressChanged(node, coinType, a);
@@ -70,7 +71,15 @@ abstract contract AddrResolver is
             emit AddrChanged(node, bytesToAddress(a));
         }
 
-        _attest(ADDR_RESOLVER_SCHEMA, bytes32(coinType), abi.encode(node, coinType, a));
+        _attest(ADDR_RESOLVER_SCHEMA, bytes32(coinType), ref, abi.encode(node, coinType, a));
+    }
+
+    function setAddr(
+        bytes32 node,
+        uint256 coinType,
+        bytes memory a
+    ) public virtual {
+        setAddrWithRef(node, coinType, bytes32(0), a);
     }
 
     function addr(

@@ -7,5 +7,6 @@
   "function addr(bytes32,uint256) view returns (bytes)",
   "function setAddr(bytes32,uint256,bytes)",
   "function setAddr(bytes32,address)",
+  "function setAddrWithRef(bytes32,uint256,bytes32,bytes)",
   "function supportsInterface(bytes4) view returns (bool)"
 ]

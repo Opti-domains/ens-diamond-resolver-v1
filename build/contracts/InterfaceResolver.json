@@ -9,6 +9,7 @@
   "function interfaceImplementer(bytes32,bytes4) view returns (address)",
   "function setAddr(bytes32,uint256,bytes)",
   "function setAddr(bytes32,address)",
+  "function setAddrWithRef(bytes32,uint256,bytes32,bytes)",
   "function setInterface(bytes32,bytes4,address)",
   "function supportsInterface(bytes4) view returns (bool)"
 ]

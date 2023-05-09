@@ -25,6 +25,24 @@ library TextResolverStorage {
 
 abstract contract TextResolver is ITextResolver, DiamondResolverUtil, IERC165 {
     /**
+     * Sets the text data associated with an ENS node and key with referenced attestation.
+     * May only be called by the owner of that node in the ENS registry.
+     * @param node The node to update.
+     * @param ref Referenced attestation.
+     * @param key The key to set.
+     * @param value The text data value to set.
+     */
+    function setTextWithRef(
+        bytes32 node,
+        bytes32 ref,
+        string calldata key,
+        string calldata value
+    ) public virtual authorised(node) {
+        _attest(TEXT_RESOLVER_SCHEMA, keccak256(abi.encodePacked(key)), ref, abi.encode(node, key, value));
+        emit TextChanged(node, key, key, value);
+    }
+
+    /**
      * Sets the text data associated with an ENS node and key.
      * May only be called by the owner of that node in the ENS registry.
      * @param node The node to update.
@@ -35,9 +53,8 @@ abstract contract TextResolver is ITextResolver, DiamondResolverUtil, IERC165 {
         bytes32 node,
         string calldata key,
         string calldata value
-    ) external virtual authorised(node) {
-        _attest(TEXT_RESOLVER_SCHEMA, keccak256(abi.encodePacked(key)), abi.encode(node, key, value));
-        emit TextChanged(node, key, key, value);
+    ) external virtual {
+        setTextWithRef(node, bytes32(0), key, value);
     }
 
     /**

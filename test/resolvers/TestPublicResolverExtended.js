@@ -21,6 +21,7 @@ const namehash = require('eth-ens-namehash')
 const sha3 = require('web3-utils').sha3
 
 const { exceptions } = require('../test-utils')
+const { ethers } = require('hardhat')
 
 async function deployWhitelistAuthFacet(_diamondResolver) {
   const diamondResolver = await (
@@ -152,12 +153,14 @@ async function deployPublicResolverFacet(_diamondResolver) {
     ethers.utils.id("setABI(bytes32,uint256,bytes)").substring(0, 10),
     ethers.utils.id("setAddr(bytes32,uint256,bytes)").substring(0, 10),
     ethers.utils.id("setAddr(bytes32,address)").substring(0, 10),
+    ethers.utils.id("setAddrWithRef(bytes32,uint256,bytes32,bytes)").substring(0, 10),
     ethers.utils.id("setContenthash(bytes32,bytes)").substring(0, 10),
     ethers.utils.id("setDNSRecords(bytes32,bytes)").substring(0, 10),
     ethers.utils.id("setInterface(bytes32,bytes4,address)").substring(0, 10),
     ethers.utils.id("setName(bytes32,string)").substring(0, 10),
     ethers.utils.id("setPubkey(bytes32,bytes32,bytes32)").substring(0, 10),
     ethers.utils.id("setText(bytes32,string,string)").substring(0, 10),
+    ethers.utils.id("setTextWithRef(bytes32,bytes32,string,string)").substring(0, 10),
     ethers.utils.id("setZonehash(bytes32,bytes)").substring(0, 10),
     ethers.utils.id("text(bytes32,string)").substring(0, 10),
     ethers.utils.id("zonehash(bytes32)").substring(0, 10),
@@ -402,6 +405,35 @@ contract('PublicResolver', function (accounts) {
     })
 
     await ens.setResolver(node, diamondResolver.address)
+  })
+
+  it('Can set address and text with ref', async () => {
+    const ADDRESS_SCHEMA = ethers.utils.solidityKeccak256(['string', 'address', 'bool'], ["bytes32 node,uint256 coinType,bytes address", "0x0000000000000000000000000000000000000000", true])
+    const TEXT_SCHEMA = ethers.utils.solidityKeccak256(['string', 'address', 'bool'], ["bytes32 node,string key,string value", "0x0000000000000000000000000000000000000000", true])
+
+    const coinType = 60;
+
+    await resolver.methods['setAddr(bytes32,uint256,bytes)'](node, coinType + 1, accounts[0]);
+
+    const addrAtt0 = await attestation.readRaw(node, ADDRESS_SCHEMA, "0x" + (coinType + 1).toString(16).padStart(64, "0"), false);
+
+    await resolver.setAddrWithRef(node, coinType, addrAtt0.uid, accounts[0]);
+
+    const addrAtt = await attestation.readRaw(node, ADDRESS_SCHEMA, "0x" + coinType.toString(16).padStart(64, "0"), false);
+
+    expect(addrAtt.refUID).to.equal(addrAtt0.uid);
+
+    await resolver.setTextWithRef(node, addrAtt.uid, 'memecoin', 'pepe');
+
+    const textKey = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('memecoin'))
+    const textAtt = await attestation.readRaw(node, TEXT_SCHEMA, textKey, false);
+
+    expect(textAtt.refUID).to.equal(addrAtt.uid);
+
+    const textRefAtt = await attestation.readRef(node, TEXT_SCHEMA, textKey, false);
+
+    expect(textRefAtt.uid).to.equal(addrAtt.uid);
+    expect(textRefAtt.refUID).to.equal(addrAtt0.uid);
   })
 
   it('Can clone DiamondResolver', async () => {

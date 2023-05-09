@@ -46,9 +46,7 @@ contract OptiDomainsAttestation {
 
     function _buildAttestation(
         address owner,
-        bytes32 node,
         bytes32 schema,
-        bytes32 key,
         bytes32 ref,
         bytes calldata data
     ) internal pure returns (AttestationRequest memory) {
@@ -77,7 +75,7 @@ contract OptiDomainsAttestation {
         address owner = toDomain
             ? address(uint160(uint256(node)))
             : registry.ownerOf(node);
-        return _buildAttestation(owner, node, schema, key, ref, data);
+        return _buildAttestation(owner, schema, ref, data);
     }
 
     event Revoke(
@@ -183,7 +181,7 @@ contract OptiDomainsAttestation {
 
         {
             bytes32 uid = eas.attest(
-                _buildAttestation(owner, node, schema, key, ref, data)
+                _buildAttestation(owner, schema, ref, data)
             );
 
             records[recordKey] = uid;
