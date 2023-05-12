@@ -24,7 +24,7 @@
   "function acceptOwnership()",
   "function approve(bytes32,address,bool)",
   "function clearRecords(bytes32)",
-  "function clone()",
+  "function clone(bytes32)",
   "function diamondCut(tuple(address,uint8,bytes4[])[],address,bytes)",
   "function facetAddress(bytes4) view returns (address)",
   "function facetAddresses() view returns (address[])",

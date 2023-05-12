@@ -19,6 +19,7 @@ const namehash = require('eth-ens-namehash')
 const sha3 = require('web3-utils').sha3
 
 const { exceptions } = require('../test-utils')
+const crypto = require('crypto')
 
 async function deployWhitelistAuthFacet(_diamondResolver) {
   const diamondResolver = await (
@@ -145,6 +146,10 @@ async function registerSchema(schemaRegistry) {
   await schemaRegistry.register("bytes32 node,bytes32 x,bytes32 y", "0x0000000000000000000000000000000000000000", true);
 }
 
+function generateSalt(address) {
+  return address + crypto.randomBytes(12).toString('hex')
+}
+
 contract('PublicResolver (Cloned)', function (accounts) {
   let node
   let ens, resolver, nameWrapper, auth, diamondResolver, nameWrapperRegistry, attestation, schemaRegistry, eas
@@ -181,13 +186,13 @@ contract('PublicResolver (Cloned)', function (accounts) {
     auth = await deployWhitelistAuthFacet(diamondResolver)
     resolver = await deployPublicResolverFacet(diamondResolver)
 
-    const cloneTx1 = await diamondResolver.clone()
+    const cloneTx1 = await diamondResolver.clone(generateSalt(accounts[0]))
     expect(cloneTx1.logs[cloneTx1.logs.length - 1].args.cloner).to.equal(accounts[0])
     const newResolverAddress1 = cloneTx1.logs[cloneTx1.logs.length - 1].args.resolver
 
     diamondResolver = await PublicResolver.at(newResolverAddress1)
 
-    const cloneTx = await diamondResolver.clone()
+    const cloneTx = await diamondResolver.clone(generateSalt(accounts[0]))
     expect(cloneTx.logs[cloneTx.logs.length - 1].args.cloner).to.equal(accounts[0])
     const newResolverAddress = cloneTx.logs[cloneTx.logs.length - 1].args.resolver
 

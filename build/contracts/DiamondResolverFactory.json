@@ -1,4 +1,4 @@
 [
   "event CloneDiamondResolver(address indexed,address indexed)",
-  "function clone()"
+  "function clone(bytes32)"
 ]

@@ -22,6 +22,7 @@ const sha3 = require('web3-utils').sha3
 
 const { exceptions } = require('../test-utils')
 const { ethers } = require('hardhat')
+const crypto = require('crypto')
 
 async function deployWhitelistAuthFacet(_diamondResolver) {
   const diamondResolver = await (
@@ -340,8 +341,8 @@ async function removeWeirdResolver(_diamondResolver) {
   await tx1.wait()
 }
 
-async function cloneResolver(diamondResolver) {
-  const cloneTx = await diamondResolver.clone()
+async function cloneResolver(diamondResolver, account) {
+  const cloneTx = await diamondResolver.clone(generateSalt(account))
   const newResolverAddress = cloneTx.logs[cloneTx.logs.length - 1].args.resolver
   const newResolver = await PublicResolver.at(newResolverAddress)
   return newResolver
@@ -358,6 +359,10 @@ async function registerSchema(schemaRegistry) {
   await schemaRegistry.register("bytes32 node,string name", "0x0000000000000000000000000000000000000000", true);
   await schemaRegistry.register("bytes32 node,string key,string value", "0x0000000000000000000000000000000000000000", true);
   await schemaRegistry.register("bytes32 node,bytes32 x,bytes32 y", "0x0000000000000000000000000000000000000000", true);
+}
+
+function generateSalt(address) {
+  return address + crypto.randomBytes(12).toString('hex')
 }
 
 contract('PublicResolver', function (accounts) {
@@ -437,8 +442,12 @@ contract('PublicResolver', function (accounts) {
   })
 
   it('Can clone DiamondResolver', async () => {
-    const newDiamondResolver = await cloneResolver(diamondResolver)
+    const newDiamondResolver = await cloneResolver(diamondResolver, accounts[0])
     expect(await newDiamondResolver.getFallbackAddress()).to.equal(diamondResolver.address)
+  })
+
+  it('Restricted false salt from cloning DiamondResolver', async () => {
+    expect(cloneResolver(diamondResolver, accounts[1])).to.be.reverted
   })
 
   it('Can override existing function', async () => {
@@ -447,7 +456,7 @@ contract('PublicResolver', function (accounts) {
     })
     assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
 
-    const newDiamondResolver = await cloneResolver(diamondResolver)
+    const newDiamondResolver = await cloneResolver(diamondResolver, accounts[0])
     const newResolver = await PublicResolverFacet.at(newDiamondResolver.address)
 
     await ens.setResolver(node, newResolver.address)
@@ -479,7 +488,7 @@ contract('PublicResolver', function (accounts) {
     })
     assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
 
-    const newDiamondResolver = await cloneResolver(diamondResolver)
+    const newDiamondResolver = await cloneResolver(diamondResolver, accounts[0])
     const newResolver = await PublicResolverFacet.at(newDiamondResolver.address)
 
     await ens.setResolver(node, newResolver.address)
@@ -506,7 +515,7 @@ contract('PublicResolver', function (accounts) {
     })
     assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[0])
 
-    const newDiamondResolver = await cloneResolver(diamondResolver)
+    const newDiamondResolver = await cloneResolver(diamondResolver, accounts[0])
     const newResolver = await PublicResolverFacet.at(newDiamondResolver.address)
 
     await ens.setResolver(node, newResolver.address)
@@ -545,7 +554,7 @@ contract('PublicResolver', function (accounts) {
     })
     assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[0])
 
-    const newDiamondResolver = await cloneResolver(diamondResolver)
+    const newDiamondResolver = await cloneResolver(diamondResolver, accounts[0])
     const newResolver = await PublicResolverFacet.at(newDiamondResolver.address)
 
     await ens.setResolver(node, newResolver.address)

@@ -50,6 +50,20 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     ),
   )
 
+  console.log(JSON.stringify([
+    [facetCut],
+    // "0x0000000000000000000000000000000000000000",
+    diamondResolver.address, 
+    // "0x",
+    diamondResolver.interface.encodeFunctionData(
+      "setMultiSupportsInterface",
+      [
+        supportInterfaces,
+        true,
+      ]
+    ),
+  ], undefined, 2))
+
   await tx1.wait()
 
   // Whitelist controller and reverseRegistrar

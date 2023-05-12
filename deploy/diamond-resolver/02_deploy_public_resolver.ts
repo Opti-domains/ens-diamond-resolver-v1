@@ -31,16 +31,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     ethers.utils.id("interfaceImplementer(bytes32,bytes4)").substring(0, 10),
     ethers.utils.id("name(bytes32)").substring(0, 10),
     ethers.utils.id("pubkey(bytes32)").substring(0, 10),
-    ethers.utils.id("resolve(bytes,bytes)").substring(0, 10),
     ethers.utils.id("setABI(bytes32,uint256,bytes)").substring(0, 10),
     ethers.utils.id("setAddr(bytes32,uint256,bytes)").substring(0, 10),
     ethers.utils.id("setAddr(bytes32,address)").substring(0, 10),
+    ethers.utils.id("setAddrWithRef(bytes32,uint256,bytes32,bytes)").substring(0, 10),
     ethers.utils.id("setContenthash(bytes32,bytes)").substring(0, 10),
     ethers.utils.id("setDNSRecords(bytes32,bytes)").substring(0, 10),
     ethers.utils.id("setInterface(bytes32,bytes4,address)").substring(0, 10),
     ethers.utils.id("setName(bytes32,string)").substring(0, 10),
     ethers.utils.id("setPubkey(bytes32,bytes32,bytes32)").substring(0, 10),
     ethers.utils.id("setText(bytes32,string,string)").substring(0, 10),
+    ethers.utils.id("setTextWithRef(bytes32,bytes32,string,string)").substring(0, 10),
     ethers.utils.id("setZonehash(bytes32,bytes)").substring(0, 10),
     ethers.utils.id("text(bytes32,string)").substring(0, 10),
     ethers.utils.id("zonehash(bytes32)").substring(0, 10),
@@ -79,6 +80,20 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       ]
     ),
   )
+  
+  console.log(JSON.stringify([
+    [facetCut],
+    // "0x0000000000000000000000000000000000000000",
+    diamondResolver.address, 
+    // "0x",
+    diamondResolver.interface.encodeFunctionData(
+      "setMultiSupportsInterface",
+      [
+        supportInterfaces,
+        true,
+      ]
+    ),
+  ], undefined, 2))
 
   await tx1.wait()
 }

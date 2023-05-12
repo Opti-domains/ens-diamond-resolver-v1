@@ -3,5 +3,5 @@
 pragma solidity ^0.8.8;
 
 interface IDiamondResolverFactory {
-  function clone() external;
+  function clone(bytes32 salt) external;
 }
