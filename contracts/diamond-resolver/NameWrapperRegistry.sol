@@ -14,6 +14,7 @@ contract NameWrapperRegistry is INameWrapperRegistry, Ownable, IERC165 {
 
     constructor(ENS _ens) {
         ens = _ens;
+        _transferOwnership(_ens.owner(bytes32(0)));
     }
 
     event NameWrapperUpgraded(
