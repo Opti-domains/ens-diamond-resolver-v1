@@ -39,7 +39,7 @@ contract OptiDomainsAttestation {
     }
 
     function activate(EAS _eas, uint256 priority) public {
-        require(msg.sender == activationController || activationPriority[_eas] > 0, "Forbidden");
+        require(msg.sender == activationController || (activationPriority[_eas] > 0 && activationPriority[_eas] == priority), "Forbidden");
         activationPriority[_eas] = priority;
         if (isContract(address(_eas))) {
             if (activationPriority[_eas] > activationPriority[eas]) {
