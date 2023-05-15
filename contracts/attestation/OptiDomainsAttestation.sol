@@ -12,6 +12,7 @@ error NotResolver(address caller, address resolver);
 contract OptiDomainsAttestation {
     INameWrapperRegistry public immutable registry;
     address public immutable activationController;
+    mapping(EAS => uint256) public activationPriority;
     EAS public eas;
 
     /**
@@ -37,10 +38,13 @@ contract OptiDomainsAttestation {
         return (size > 0);
     }
 
-    function activate(EAS _eas) public {
-        require(msg.sender == activationController, "Forbidden");
+    function activate(EAS _eas, uint256 priority) public {
+        require(msg.sender == activationController || activationPriority[_eas] > 0, "Forbidden");
+        activationPriority[_eas] = priority;
         if (isContract(address(_eas))) {
-            eas = _eas;
+            if (activationPriority[_eas] > activationPriority[eas]) {
+                eas = _eas;
+            }
         }
     }
 

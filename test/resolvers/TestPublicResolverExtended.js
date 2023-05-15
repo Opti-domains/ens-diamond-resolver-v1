@@ -389,7 +389,7 @@ contract('PublicResolver', function (accounts) {
     nameWrapperRegistry = await NameWrapperRegistry.new(ens.address);
     attestation = await OptiDomainsAttestation.new(nameWrapperRegistry.address, accounts[0]);
 
-    await attestation.activate(eas.address)
+    await attestation.activate(eas.address, 1)
     await nameWrapperRegistry.upgrade("0x0000000000000000000000000000000000000000", nameWrapper.address)
     await nameWrapperRegistry.setAttestation(attestation.address)
 
