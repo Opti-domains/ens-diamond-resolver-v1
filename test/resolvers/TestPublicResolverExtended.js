@@ -7,6 +7,7 @@ const NameWrapperRegistry = artifacts.require('NameWrapperRegistry.sol')
 const NameWrapper = artifacts.require('MockNameWrapper.sol')
 const RegistryWhitelistAuthFacet = artifacts.require('RegistryWhitelistAuthFacet.sol')
 const OptiDomainsSocialOracle = artifacts.require('OptiDomainsSocialOracle.sol')
+const OptiDomainsSocialOracleFacet = artifacts.require('OptiDomainsSocialOracleFacet.sol')
 const PublicResolverFacet = artifacts.require('PublicResolverFacet.sol')
 const TestAddrResolver = artifacts.require('TestAddrResolver.sol')
 const TestWeirdResolver = artifacts.require('TestWeirdResolver.sol')
@@ -143,6 +144,7 @@ async function deploySocialOracle(_diamondResolver, operator, attestation) {
   ).attach(_diamondResolver.address)
 
   const oracle = await OptiDomainsSocialOracle.new(operator, attestation);
+  const oracleFacet = await OptiDomainsSocialOracleFacet.new(operator, attestation);
 
   const selectors = [
     ethers.utils.id("setWalletWithVerification(bytes32,address,uint256,bytes,bytes,bytes)").substring(0, 10),
@@ -150,7 +152,7 @@ async function deploySocialOracle(_diamondResolver, operator, attestation) {
   ]
 
   const facetCut = {
-    target: oracle.address,
+    target: oracleFacet.address,
     action: 0, // ADD
     selectors: selectors
   }
@@ -163,7 +165,7 @@ async function deploySocialOracle(_diamondResolver, operator, attestation) {
 
   await tx1.wait()
 
-  return [await OptiDomainsSocialOracle.at(diamondResolver.address), await OptiDomainsSocialOracle.at(oracle.address)]
+  return [await OptiDomainsSocialOracleFacet.at(diamondResolver.address), await OptiDomainsSocialOracle.at(oracle.address)]
 }
 
 async function deployTestAddrResolver(_diamondResolver, action = 0) {
@@ -514,17 +516,19 @@ contract('PublicResolver', function (accounts) {
       [node, coinType, accounts[1], '0x1234']
     )
 
+    const socialSignature = generateSocialOracleSignature(
+      oracle.address,
+      WALLET_ORACLE_SCHEMA,
+      addrData,
+    )
+
     await oracleResolver.setWalletWithVerification(
       node,
       oracle.address,
       coinType,
       accounts[1],
       '0x1234',
-      generateSocialOracleSignature(
-        oracle.address,
-        WALLET_ORACLE_SCHEMA,
-        addrData,
-      )
+      socialSignature,
     )
 
     assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
@@ -534,18 +538,14 @@ contract('PublicResolver', function (accounts) {
     expect(addrRefAtt.recipient).to.equal(accounts[0]);
     expect(addrRefAtt.data).to.equal(addrData);
 
-    await oracleResolver.setWalletWithVerification(
+    expect(oracleResolver.setWalletWithVerification(
       node,
       oracle.address,
       coinType,
       accounts[1],
       '0x1234',
-      generateSocialOracleSignature(
-        oracle.address,
-        WALLET_ORACLE_SCHEMA,
-        addrData,
-      )
-    )
+      socialSignature,
+    )).to.be.revertedWith("DigestAttested(" + ethers.utils.keccak256(addrData) + ")")
 
     const socialData = ethers.utils.defaultAbiCoder.encode(
       ['bytes32', 'string', 'string', 'bytes'],
@@ -572,6 +572,31 @@ contract('PublicResolver', function (accounts) {
     expect(socialRefAtt.attester).to.equal(oracle.address);
     expect(socialRefAtt.recipient).to.equal(accounts[0]);
     expect(socialRefAtt.data).to.equal(socialData);
+
+    await oracle.revoke(
+      WALLET_ORACLE_SCHEMA, 
+      addrRefAtt.uid, 
+      generateSocialOracleRevokeSignature(
+        oracle.address,
+        WALLET_ORACLE_SCHEMA,
+        addrRefAtt.uid,
+      )
+    )
+
+    assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    const addrRefAtt2 = await attestation.readRef(node, ADDRESS_SCHEMA, "0x" + coinType.toString(16).padStart(64, "0"), false);
+
+    expect(parseFloat(addrRefAtt2.revocationTime)).to.greaterThan(0);
+
+    expect(oracle.revoke(
+      WALLET_ORACLE_SCHEMA, 
+      addrRefAtt.uid, 
+      generateSocialOracleRevokeSignature(
+        oracle.address,
+        WALLET_ORACLE_SCHEMA,
+        addrRefAtt.uid,
+      )
+    )).to.be.reverted
   })
 
   it('Can clone DiamondResolver', async () => {
