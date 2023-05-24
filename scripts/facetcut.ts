@@ -7,7 +7,7 @@ async function main() {
   // function earthKyc(bytes32 node) external view returns(bytes32);
 
   const DiamondResolver = await ethers.getContractFactory("DiamondResolver");
-  const diamondResolver = await DiamondResolver.attach("0x1eBC01F781d25108D6f7D6DF290E7F53EaA60FD8");
+  const diamondResolver = await DiamondResolver.attach("0xc8C033028a3353F5FFE6A873A2805a131ED00d1f");
 
   const selectors = [
     ethers.utils.id("setEarthKyc(bytes32,bytes32)").substring(0, 10),
@@ -15,7 +15,7 @@ async function main() {
   ]
 
   const facetCut = {
-    target: "0x576aC8cb24eBB13525181237A325654b06cB1Fff",
+    target: "0x838Ea9a64EA1C57F311bD2e7Aa649C0d6984c1eB",
     action: 0, // ADD
     selectors: selectors
   }
@@ -36,7 +36,6 @@ async function main() {
     //     true,
     //   ]
     // ),
-    // { gasLimit: 10000000 }
   )
 
   await tx1.wait()

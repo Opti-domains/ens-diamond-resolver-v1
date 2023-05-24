@@ -87,6 +87,24 @@ const config: HardhatUserConfig = {
       chainId: 84531,
       accounts: real_accounts,
     },
+    polygonzkevm_goerli: {
+      url: `https://rpc.public.zkevm-test.net`,
+      tags: ['test', 'use_root'],
+      chainId: 1442,
+      accounts: real_accounts,
+    },
+    xdc_testnet: {
+      url: "https://erpc.apothem.network",
+      tags: ['test', 'use_root'],
+      chainId: 51,
+      accounts: real_accounts,
+    },
+		gnosis_testnet: {
+      url: "https://rpc.chiadochain.net",
+      tags: ['test', 'use_root'],
+      chainId: 10200,
+      accounts: real_accounts,
+    },
   },
   mocha: {},
   solidity: {
