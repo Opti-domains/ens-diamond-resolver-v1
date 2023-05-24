@@ -1,0 +1,7 @@
+[
+  "error Unauthorised()",
+  "event VersionChanged(bytes32 indexed,uint64)",
+  "function setSocialProfile(bytes32,address,string,string,bytes,bytes)",
+  "function setWalletWithVerification(bytes32,address,uint256,bytes,bytes,bytes)",
+  "function supportsInterface(bytes4) view returns (bool)"
+]

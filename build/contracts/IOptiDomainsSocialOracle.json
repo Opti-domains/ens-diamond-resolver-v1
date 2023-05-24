@@ -1,0 +1,4 @@
+[
+  "function attest(bytes32,bytes,bytes) returns (bytes32)",
+  "function revoke(bytes32,bytes32,bytes)"
+]
