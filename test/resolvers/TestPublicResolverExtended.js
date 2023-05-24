@@ -507,23 +507,71 @@ contract('PublicResolver', function (accounts) {
     const ADDRESS_SCHEMA = ethers.utils.solidityKeccak256(['string', 'address', 'bool'], ["bytes32 node,uint256 coinType,bytes address", "0x0000000000000000000000000000000000000000", true])
     const TEXT_SCHEMA = ethers.utils.solidityKeccak256(['string', 'address', 'bool'], ["bytes32 node,string key,string value", "0x0000000000000000000000000000000000000000", true])
 
+    const coinType = 60
+
+    const addrData = ethers.utils.defaultAbiCoder.encode(
+      ['bytes32', 'uint256', 'bytes', 'bytes'],
+      [node, coinType, accounts[1], '0x1234']
+    )
+
     await oracleResolver.setWalletWithVerification(
       node,
       oracle.address,
-      60,
+      coinType,
       accounts[1],
       '0x1234',
       generateSocialOracleSignature(
         oracle.address,
         WALLET_ORACLE_SCHEMA,
-        ethers.utils.defaultAbiCoder.encode(
-          ['bytes32', 'uint256', 'bytes', 'bytes'],
-          [node, 60, accounts[1], '0x1234']
-        )
+        addrData,
       )
     )
 
     assert.equal(await resolver.methods['addr(bytes32)'](node), accounts[1])
+    const addrRefAtt = await attestation.readRef(node, ADDRESS_SCHEMA, "0x" + coinType.toString(16).padStart(64, "0"), false);
+
+    expect(addrRefAtt.attester).to.equal(oracle.address);
+    expect(addrRefAtt.recipient).to.equal(accounts[0]);
+    expect(addrRefAtt.data).to.equal(addrData);
+
+    await oracleResolver.setWalletWithVerification(
+      node,
+      oracle.address,
+      coinType,
+      accounts[1],
+      '0x1234',
+      generateSocialOracleSignature(
+        oracle.address,
+        WALLET_ORACLE_SCHEMA,
+        addrData,
+      )
+    )
+
+    const socialData = ethers.utils.defaultAbiCoder.encode(
+      ['bytes32', 'string', 'string', 'bytes'],
+      [node, 'twitter', 'optidomains', '0x2345']
+    )
+
+    await oracleResolver.setSocialProfile(
+      node,
+      oracle.address,
+      'twitter',
+      'optidomains',
+      '0x2345',
+      generateSocialOracleSignature(
+        oracle.address,
+        SOCIAL_ORACLE_SCHEMA,
+        socialData,
+      )
+    )
+
+    assert.equal(await resolver.methods['text(bytes32,string)'](node, 'twitter'), 'optidomains')
+    const socialKey = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('twitter'))
+    const socialRefAtt = await attestation.readRef(node, TEXT_SCHEMA, socialKey, false);
+
+    expect(socialRefAtt.attester).to.equal(oracle.address);
+    expect(socialRefAtt.recipient).to.equal(accounts[0]);
+    expect(socialRefAtt.data).to.equal(socialData);
   })
 
   it('Can clone DiamondResolver', async () => {
