@@ -36,8 +36,8 @@ abstract contract DiamondResolverUtil {
         return _attestation().read(node, schema, key);
     }
 
-    function _attest(bytes32 schema, bytes32 key, bytes32 ref, bool toDomain, bytes memory value) internal {
-        _attestation().attest(schema, key, ref, toDomain, value);
+    function _attest(bytes32 schema, bytes32 key, bytes32 ref, uint64 expiration, bool toDomain, bytes memory value) internal {
+        _attestation().attest(schema, key, ref, expiration, toDomain, value);
     }
 
     function _attest(bytes32 schema, bytes32 key, bytes32 ref, bytes memory value) internal {

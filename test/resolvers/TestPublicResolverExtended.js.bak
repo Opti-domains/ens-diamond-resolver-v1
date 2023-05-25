@@ -7,7 +7,6 @@ const NameWrapperRegistry = artifacts.require('NameWrapperRegistry.sol')
 const NameWrapper = artifacts.require('MockNameWrapper.sol')
 const RegistryWhitelistAuthFacet = artifacts.require('RegistryWhitelistAuthFacet.sol')
 const OptiDomainsSocialOracle = artifacts.require('OptiDomainsSocialOracle.sol')
-const OptiDomainsSocialOracleFacet = artifacts.require('OptiDomainsSocialOracleFacet.sol')
 const PublicResolverFacet = artifacts.require('PublicResolverFacet.sol')
 const TestAddrResolver = artifacts.require('TestAddrResolver.sol')
 const TestWeirdResolver = artifacts.require('TestWeirdResolver.sol')
@@ -144,7 +143,6 @@ async function deploySocialOracle(_diamondResolver, operator, attestation) {
   ).attach(_diamondResolver.address)
 
   const oracle = await OptiDomainsSocialOracle.new(operator, attestation);
-  const oracleFacet = await OptiDomainsSocialOracleFacet.new(operator, attestation);
 
   const selectors = [
     ethers.utils.id("setWalletWithVerification(bytes32,address,uint256,bytes,bytes,bytes)").substring(0, 10),
@@ -152,7 +150,7 @@ async function deploySocialOracle(_diamondResolver, operator, attestation) {
   ]
 
   const facetCut = {
-    target: oracleFacet.address,
+    target: oracle.address,
     action: 0, // ADD
     selectors: selectors
   }
@@ -165,7 +163,7 @@ async function deploySocialOracle(_diamondResolver, operator, attestation) {
 
   await tx1.wait()
 
-  return [await OptiDomainsSocialOracleFacet.at(diamondResolver.address), await OptiDomainsSocialOracle.at(oracle.address)]
+  return [await OptiDomainsSocialOracle.at(diamondResolver.address), await OptiDomainsSocialOracle.at(oracle.address)]
 }
 
 async function deployTestAddrResolver(_diamondResolver, action = 0) {
@@ -447,7 +445,7 @@ contract('PublicResolver', function (accounts) {
     nameWrapperRegistry = await NameWrapperRegistry.new(ens.address);
     attestation = await OptiDomainsAttestation.new(nameWrapperRegistry.address, accounts[0]);
 
-    await attestation.activate(eas.address, 1)
+    // await attestation.activate(eas.address, 1)
     await nameWrapperRegistry.upgrade("0x0000000000000000000000000000000000000000", nameWrapper.address)
     await nameWrapperRegistry.setAttestation(attestation.address)
 

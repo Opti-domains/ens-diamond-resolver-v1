@@ -11,9 +11,20 @@ error NotResolver(address caller, address resolver);
 
 contract OptiDomainsAttestation {
     INameWrapperRegistry public immutable registry;
-    address public immutable activationController;
-    mapping(EAS => uint256) public activationPriority;
-    EAS public eas;
+
+    struct AttestationRecord {
+        bytes32 uid;
+        // bytes32 timelessUid;
+        // bytes32 schema;
+        // bytes32 key;
+        // bytes32 refUID;
+        // uint64 time;
+        // uint64 expirationTime;
+        uint64 revocationTime;
+        address recipient;
+        address attester;
+        bytes data;
+    }
 
     /**
      * @notice Maps domain to version. Node => Owner => Version.
@@ -25,68 +36,29 @@ contract OptiDomainsAttestation {
      */
     mapping(bytes32 => bytes32) public records;
 
-    constructor(INameWrapperRegistry _registry, address _activationController) {
+    /**
+     * @notice Attestation records mapping from uid
+     */
+    mapping(bytes32 => AttestationRecord) public attestationRecords;
+
+    /**
+     * @notice Attestation chains
+     */
+    bytes32[] public attestationChains;
+
+    /**
+     * @notice Maps Timeless UID to UID with time
+     */
+    mapping(bytes32 => bytes32) public timelessToUid;
+
+    constructor(INameWrapperRegistry _registry) {
         registry = _registry;
-        activationController = _activationController;
-    }
-
-    function isContract(address _addr) private view returns (bool) {
-        uint32 size;
-        assembly {
-            size := extcodesize(_addr)
-        }
-        return (size > 0);
-    }
-
-    function activate(EAS _eas, uint256 priority) public {
-        require(msg.sender == activationController || (activationPriority[_eas] > 0 && activationPriority[_eas] == priority), "Forbidden");
-        activationPriority[_eas] = priority;
-        if (isContract(address(_eas))) {
-            if (activationPriority[_eas] > activationPriority[eas]) {
-                eas = _eas;
-            }
-        }
-    }
-
-    function _buildAttestation(
-        address owner,
-        bytes32 schema,
-        bytes32 ref,
-        bytes calldata data
-    ) internal pure returns (AttestationRequest memory) {
-        return
-            AttestationRequest({
-                schema: schema,
-                data: AttestationRequestData({
-                    recipient: owner,
-                    expirationTime: 0,
-                    revocable: true,
-                    refUID: ref,
-                    data: data,
-                    value: 0
-                })
-            });
-    }
-
-    function buildAttestation(
-        bytes32 node,
-        bytes32 schema,
-        bytes32 key,
-        bytes32 ref,
-        bool toDomain,
-        bytes calldata data
-    ) public view returns (AttestationRequest memory) {
-        address owner = toDomain
-            ? address(uint160(uint256(node)))
-            : registry.ownerOf(node);
-        return _buildAttestation(owner, schema, ref, data);
     }
 
     event Revoke(
         bytes32 indexed node,
         bytes32 indexed schema,
         bytes32 indexed key,
-        bool toDomain,
         bytes32 uid
     );
 
@@ -118,14 +90,9 @@ contract OptiDomainsAttestation {
         ];
 
         if (uid != 0) {
-            eas.revoke(
-                RevocationRequest({
-                    schema: schema,
-                    data: RevocationRequestData({uid: uid, value: 0})
-                })
-            );
+            attestationRecords[uid].revocationTime = uint64(block.timestamp);
 
-            emit Revoke(node, schema, key, toDomain, uid);
+            emit Revoke(node, schema, key, uid);
         }
     }
 
@@ -134,64 +101,113 @@ contract OptiDomainsAttestation {
         bytes32 indexed schema,
         bytes32 indexed key,
         bytes32 ref,
-        address owner,
-        address resolver,
-        bool toDomain,
-        bytes data
+        bytes32 uid,
+        bytes32 timelessUid
     );
+
+    function _attest(
+        bytes32 node,
+        bytes32 schema,
+        bytes32 key,
+        bytes32 ref,
+        uint64 time,
+        uint64 expirationTime,
+        address owner,
+        address attester,
+        bytes calldata data
+    ) internal returns(bytes32 uid) {
+        bytes32 timelessUid = keccak256(abi.encodePacked(
+            node,
+            schema,
+            key,
+            ref,
+            expirationTime,
+            owner,
+            attester,
+            data
+        ));
+
+        // Generate hash in a gas efficient way
+        unchecked {
+            uid = bytes32(uint256(timelessUid) * time);
+
+            AttestationRecord memory record = AttestationRecord({
+                uid: uid,
+                // timelessUid: timelessUid,
+                // schema: schema,
+                // key: key,
+                // refUID: ref,
+                // time: time,
+                // expirationTime: expirationTime,
+                revocationTime: 0,
+                recipient: owner,
+                attester: attester,
+                data: data
+            });
+
+            attestationRecords[uid] = record;
+            // timelessToUid[timelessUid] = uid;
+            // attestationChains.push(uid);
+
+            emit Attest(node, schema, key, ref, uid, timelessUid);
+        }
+    }
 
     function attest(
         bytes32 schema,
         bytes32 key,
         bytes32 ref,
+        uint64 expirationTime,
         bool toDomain,
         bytes calldata data
-    ) public {
+    ) public returns(bytes32 uid) {
         bytes32 node = abi.decode(data, (bytes32));
 
+        address attester = address(this);
         address resolver = registry.ens().resolver(node);
         if (msg.sender != resolver) {
-            revert NotResolver(msg.sender, resolver);
+            attester = msg.sender;
         }
 
         address owner = toDomain
             ? address(uint160(uint256(node)))
             : registry.ownerOf(node);
 
-        bytes32 recordKey = keccak256(
-            abi.encodePacked(
-                versions[node][owner],
+        {
+            uid = _attest(
                 node,
-                owner,
                 schema,
-                key
-            )
-        );
-
-        {
-            bytes32 oldUid = records[recordKey];
-
-            if (oldUid != 0) {
-                eas.revoke(
-                    RevocationRequest({
-                        schema: schema,
-                        data: RevocationRequestData({uid: oldUid, value: 0})
-                    })
-                );
-
-                emit Revoke(node, schema, key, toDomain, oldUid);
-            }
-        }
-
-        {
-            bytes32 uid = eas.attest(
-                _buildAttestation(owner, schema, ref, data)
+                key,
+                ref,
+                uint64(block.timestamp),
+                expirationTime,
+                owner,
+                attester,
+                data
             );
 
-            records[recordKey] = uid;
-        }
+            if (attester == address(this)) {
+                bytes32 recordKey = keccak256(
+                    abi.encodePacked(
+                        versions[node][owner],
+                        node,
+                        owner,
+                        schema,
+                        key
+                    )
+                );
 
-        emit Attest(node, schema, key, ref, owner, resolver, false, data);
+                bytes32 oldUid = records[recordKey];
+
+                if (oldUid != 0) {
+                    attestationRecords[oldUid].revocationTime = uint64(block.timestamp);
+
+                    emit Revoke(node, schema, key, oldUid);
+                }
+
+                records[recordKey] = uid;
+            }
+        }
     }
 
     function attest(
@@ -199,12 +215,12 @@ contract OptiDomainsAttestation {
         bytes32 key,
         bytes32 ref,
         bytes calldata data
-    ) public {
-        attest(schema, key, ref, false, data);
+    ) public returns(bytes32) {
+        return attest(schema, key, ref, 0, false, data);
     }
 
-    function attest(bytes32 schema, bytes32 key, bytes calldata data) public {
-        attest(schema, key, bytes32(0), false, data);
+    function attest(bytes32 schema, bytes32 key, bytes calldata data) public returns(bytes32) {
+        return attest(schema, key, bytes32(0), 0, false, data);
     }
 
     function readRaw(
@@ -212,12 +228,12 @@ contract OptiDomainsAttestation {
         bytes32 schema,
         bytes32 key,
         bool toDomain
-    ) public view returns (Attestation memory) {
+    ) public view returns (AttestationRecord memory) {
         address owner = toDomain
             ? address(uint160(uint256(node)))
             : registry.ownerOf(node);
         return
-            eas.getAttestation(
+            attestationRecords[
                 records[
                     keccak256(
                         abi.encodePacked(
@@ -229,7 +245,7 @@ contract OptiDomainsAttestation {
                         )
                     )
                 ]
-            );
+            ];
     }
 
     function readRef(
@@ -237,8 +253,8 @@ contract OptiDomainsAttestation {
         bytes32 schema,
         bytes32 key,
         bool toDomain
-    ) public view returns (Attestation memory) {
-        return eas.getAttestation(readRaw(node, schema, key, toDomain).refUID);
+    ) public view returns (AttestationRecord memory) {
+        // return attestationRecords[readRaw(node, schema, key, toDomain).refUID];
     }
 
     function read(
@@ -250,7 +266,7 @@ contract OptiDomainsAttestation {
         address owner = toDomain
             ? address(uint160(uint256(node)))
             : registry.ownerOf(node);
-        Attestation memory a = eas.getAttestation(
+        AttestationRecord memory a = attestationRecords[
             records[
                 keccak256(
                     abi.encodePacked(
@@ -262,18 +278,18 @@ contract OptiDomainsAttestation {
                     )
                 )
             ]
-        );
+        ];
 
-        if (
-            a.attester != address(this) ||
-            a.recipient != owner ||
-            a.schema != schema ||
-            (a.expirationTime > 0 && a.expirationTime < block.timestamp) ||
-            a.revocationTime != 0 ||
-            a.data.length <= 32
-        ) {
-            return "";
-        }
+        // if (
+        //     a.attester != address(this) ||
+        //     a.recipient != owner ||
+        //     a.schema != schema ||
+        //     (a.expirationTime > 0 && a.expirationTime < block.timestamp) ||
+        //     a.revocationTime != 0 ||
+        //     a.data.length <= 32
+        // ) {
+        //     return "";
+        // }
 
         return a.data;
     }

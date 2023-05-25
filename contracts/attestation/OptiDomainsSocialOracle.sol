@@ -59,19 +59,21 @@ contract OptiDomainsSocialOracle is IOptiDomainsSocialOracle, OptiDomainsSocialO
 
         attested[digest] = true;
 
-        return attestation.eas().attest(
-            AttestationRequest({
-                schema: schema,
-                data: AttestationRequestData({
-                    recipient: attestation.registry().ownerOf(node),
-                    expirationTime: 0,
-                    revocable: true,
-                    refUID: bytes32(0),
-                    data: data,
-                    value: 0
-                })
-            })
-        );
+        return 0;
+
+        // return attestation.eas().attest(
+        //     AttestationRequest({
+        //         schema: schema,
+        //         data: AttestationRequestData({
+        //             recipient: attestation.registry().ownerOf(node),
+        //             expirationTime: 0,
+        //             revocable: true,
+        //             refUID: bytes32(0),
+        //             data: data,
+        //             value: 0
+        //         })
+        //     })
+        // );
     }
 
     function revoke(bytes32 schema, bytes32 uid, bytes calldata operatorSignature) public {
@@ -95,11 +97,11 @@ contract OptiDomainsSocialOracle is IOptiDomainsSocialOracle, OptiDomainsSocialO
             revert InvalidOperatorSignature();
         }
 
-        attestation.eas().revoke(
-            RevocationRequest({
-                schema: schema,
-                data: RevocationRequestData({uid: uid, value: 0})
-            })
-        );
+        // attestation.eas().revoke(
+        //     RevocationRequest({
+        //         schema: schema,
+        //         data: RevocationRequestData({uid: uid, value: 0})
+        //     })
+        // );
     }
 }
