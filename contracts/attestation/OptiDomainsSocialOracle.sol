@@ -5,13 +5,16 @@ import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/Signa
 import "./OptiDomainsAttestation.sol";
 import "./IOptiDomainsSocialOracle.sol";
 
+// To save gas deploying resolver
+import "../diamond-resolver/facets/social-oracle/OptiDomainsSocialOracleResolver.sol";
+
 error InvalidOperatorSignature();
 error DigestAttested(bytes32 digest);
 
 bytes32 constant KECCAK256_ATTEST = keccak256("attest");
 bytes32 constant KECCAK256_REVOKE = keccak256("revoke");
 
-contract OptiDomainsSocialOracle is IOptiDomainsSocialOracle {
+contract OptiDomainsSocialOracle is IOptiDomainsSocialOracle, OptiDomainsSocialOracleResolver {
     address public immutable operator;
     OptiDomainsAttestation public immutable attestation;
 
