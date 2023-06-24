@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import {INameWrapperRegistry} from "../diamond-resolver/INameWrapperRegistry.sol";
-import "./eas/EAS.sol";
+import "./IOptiDomainsAttestation.sol";
 import "hardhat/console.sol";
 
 bytes32 constant VERSION_KEY = keccak256("optidomains.resolver.VersionStorage");
 
 error NotResolver(address caller, address resolver);
 
-contract OptiDomainsAttestation {
+contract OptiDomainsAttestation is IOptiDomainsAttestation {
     INameWrapperRegistry public immutable registry;
     address public immutable activationController;
     mapping(EAS => uint256) public activationPriority;
@@ -71,7 +70,6 @@ contract OptiDomainsAttestation {
     function buildAttestation(
         bytes32 node,
         bytes32 schema,
-        bytes32 key,
         bytes32 ref,
         bool toDomain,
         bytes calldata data

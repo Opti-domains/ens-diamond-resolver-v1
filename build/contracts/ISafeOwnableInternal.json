@@ -1,6 +1,36 @@
 [
-  "error Ownable__NotOwner()",
-  "error Ownable__NotTransitiveOwner()",
-  "error SafeOwnable__NotNomineeOwner()",
-  "event OwnershipTransferred(address indexed,address indexed)"
+  {
+    "inputs": [],
+    "name": "Ownable__NotOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Ownable__NotTransitiveOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "SafeOwnable__NotNomineeOwner",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  }
 ]

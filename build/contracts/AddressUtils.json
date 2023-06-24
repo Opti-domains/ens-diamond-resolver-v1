@@ -1,5 +1,17 @@
 [
-  "error AddressUtils__InsufficientBalance()",
-  "error AddressUtils__NotContract()",
-  "error AddressUtils__SendValueFailed()"
+  {
+    "inputs": [],
+    "name": "AddressUtils__InsufficientBalance",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "AddressUtils__NotContract",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "AddressUtils__SendValueFailed",
+    "type": "error"
+  }
 ]

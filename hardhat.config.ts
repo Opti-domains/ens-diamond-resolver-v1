@@ -133,9 +133,10 @@ const config: HardhatUserConfig = {
       'NameResolver$',
       'TestBytesUtils$',
       'legacy/*',
+      'SolidStateDiamond',
     ],
     spacing: 2,
-    pretty: true,
+    pretty: false,
   },
   namedAccounts: {
     deployer: {

@@ -2,7 +2,8 @@ const ENS = artifacts.require('./registry/ENSRegistry.sol')
 const PublicResolver = artifacts.require('DiamondResolver.sol')
 const EAS = artifacts.require('EAS.sol')
 const SchemaRegistry = artifacts.require('SchemaRegistry.sol')
-const OptiDomainsAttestation = artifacts.require('OptiDomainsAttestation.sol')
+const OptiDomainsAttestationFacet = artifacts.require('OptiDomainsAttestationFacet.sol')
+const OptiDomainsAttestationDiamond = artifacts.require('OptiDomainsAttestationDiamond.sol')
 const NameWrapperRegistry = artifacts.require('NameWrapperRegistry.sol')
 const NameWrapper = artifacts.require('MockNameWrapper.sol')
 const RegistryWhitelistAuthFacet = artifacts.require('RegistryWhitelistAuthFacet.sol')
@@ -152,7 +153,8 @@ function generateSalt(address) {
 
 contract('PublicResolver (Cloned)', function (accounts) {
   let node
-  let ens, resolver, nameWrapper, auth, diamondResolver, nameWrapperRegistry, attestation, schemaRegistry, eas
+  let attestation, attestationFacet, attestationDiamond
+  let ens, resolver, nameWrapper, auth, diamondResolver, nameWrapperRegistry, schemaRegistry, eas
   let account
   let signers
   let result
@@ -172,9 +174,11 @@ contract('PublicResolver (Cloned)', function (accounts) {
     nameWrapper = await NameWrapper.new()
 
     nameWrapperRegistry = await NameWrapperRegistry.new(ens.address);
-    attestation = await OptiDomainsAttestation.new(nameWrapperRegistry.address, accounts[0]);
+    attestationFacet = await OptiDomainsAttestationFacet.new(nameWrapperRegistry.address, accounts[0]);
+    attestationDiamond = await OptiDomainsAttestationDiamond.new(accounts[0], attestationFacet.address);
+    attestation = await OptiDomainsAttestationFacet.at(attestationDiamond.address)
 
-    await attestation.activate(eas.address, 1)
+    await attestation.activate([[eas.address, 1, 0]])
     await nameWrapperRegistry.upgrade("0x0000000000000000000000000000000000000000", nameWrapper.address)
     await nameWrapperRegistry.setAttestation(attestation.address)
 
@@ -1539,7 +1543,7 @@ contract('PublicResolver (Cloned)', function (accounts) {
       // console.log(receipt.logs)
       const logs = receipt.logs.filter(x => 
         x.topics[0] != '0x8bf46bf4cfd674fa735a3d63ec1c9ad4153f033c290341f3a588b75685141b35' &&
-        x.topics[0] != '0x2c70793990cd218759ebeebe6f7f8a216e084c0f7f622241189e39507a86323c').map(log => interface.parseLog(log));
+        x.topics[0] != '0x88dff2875629931e9f73aabe70a18f5b66863b24b0f6c023e6b25cbc3ec74160').map(log => interface.parseLog(log));
 
       assert.equal(logs.length, 3)
       assert.equal(logs[0].name, 'AddressChanged')

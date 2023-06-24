@@ -2,7 +2,8 @@ const ENS = artifacts.require('./registry/ENSRegistry.sol')
 const PublicResolver = artifacts.require('DiamondResolver.sol')
 const EAS = artifacts.require('EAS.sol')
 const SchemaRegistry = artifacts.require('SchemaRegistry.sol')
-const OptiDomainsAttestation = artifacts.require('OptiDomainsAttestation.sol')
+const OptiDomainsAttestationFacet = artifacts.require('OptiDomainsAttestationFacet.sol')
+const OptiDomainsAttestationDiamond = artifacts.require('OptiDomainsAttestationDiamond.sol')
 const NameWrapperRegistry = artifacts.require('NameWrapperRegistry.sol')
 const NameWrapper = artifacts.require('MockNameWrapper.sol')
 const RegistryWhitelistAuthFacet = artifacts.require('RegistryWhitelistAuthFacet.sol')
@@ -425,7 +426,8 @@ function generateSocialOracleRevokeSignature(address, schema, uid) {
 
 contract('PublicResolver', function (accounts) {
   let node
-  let ens, resolver, nameWrapper, auth, diamondResolver, nameWrapperRegistry, attestation, schemaRegistry, eas, oracleResolver, oracle
+  let attestation, attestationFacet, attestationDiamond
+  let ens, resolver, nameWrapper, auth, diamondResolver, nameWrapperRegistry, schemaRegistry, eas, oracleResolver, oracle
   let account
   let signers
   let result
@@ -445,9 +447,11 @@ contract('PublicResolver', function (accounts) {
     nameWrapper = await NameWrapper.new()
 
     nameWrapperRegistry = await NameWrapperRegistry.new(ens.address);
-    attestation = await OptiDomainsAttestation.new(nameWrapperRegistry.address, accounts[0]);
+    attestationFacet = await OptiDomainsAttestationFacet.new(nameWrapperRegistry.address, accounts[0]);
+    attestationDiamond = await OptiDomainsAttestationDiamond.new(accounts[0], attestationFacet.address);
+    attestation = await OptiDomainsAttestationFacet.at(attestationDiamond.address)
 
-    await attestation.activate(eas.address, 1)
+    await attestation.activate([[eas.address, 1, 0]])
     await nameWrapperRegistry.upgrade("0x0000000000000000000000000000000000000000", nameWrapper.address)
     await nameWrapperRegistry.setAttestation(attestation.address)
 

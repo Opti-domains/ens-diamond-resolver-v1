@@ -1,9 +1,151 @@
 [
-  "error Unauthorised()",
-  "event TextChanged(bytes32 indexed,string indexed,string,string)",
-  "event VersionChanged(bytes32 indexed,uint64)",
-  "function setText(bytes32,string,string)",
-  "function setTextWithRef(bytes32,bytes32,string,string)",
-  "function supportsInterface(bytes4) view returns (bool)",
-  "function text(bytes32,string) view returns (string)"
+  {
+    "inputs": [],
+    "name": "Unauthorised",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "string",
+        "name": "indexedKey",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "key",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      }
+    ],
+    "name": "TextChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "newVersion",
+        "type": "uint64"
+      }
+    ],
+    "name": "VersionChanged",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "key",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      }
+    ],
+    "name": "setText",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "ref",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "key",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      }
+    ],
+    "name": "setTextWithRef",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4",
+        "name": "interfaceID",
+        "type": "bytes4"
+      }
+    ],
+    "name": "supportsInterface",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "key",
+        "type": "string"
+      }
+    ],
+    "name": "text",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "result",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
 ]

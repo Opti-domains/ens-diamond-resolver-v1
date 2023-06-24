@@ -55,6 +55,12 @@
       {
         "indexed": false,
         "internalType": "bytes32",
+        "name": "uid",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
         "name": "ref",
         "type": "bytes32"
       },
@@ -72,9 +78,9 @@
       },
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "toDomain",
-        "type": "bool"
+        "internalType": "address",
+        "name": "origin",
+        "type": "address"
       },
       {
         "indexed": false,
@@ -134,15 +140,21 @@
       },
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "toDomain",
-        "type": "bool"
-      },
-      {
-        "indexed": false,
         "internalType": "bytes32",
         "name": "uid",
         "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "origin",
+        "type": "address"
       }
     ],
     "name": "Revoke",
@@ -151,14 +163,26 @@
   {
     "inputs": [
       {
-        "internalType": "contract EAS",
-        "name": "_eas",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "priority",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "contract EAS",
+            "name": "eas",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "priority",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "chainId",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct OptiDomainsAttestationFacet.ActivationRule[]",
+        "name": "rules",
+        "type": "tuple[]"
       }
     ],
     "name": "activate",
@@ -182,25 +206,6 @@
   {
     "inputs": [
       {
-        "internalType": "contract EAS",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "activationPriority",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "bytes32",
         "name": "schema",
         "type": "bytes32"
@@ -278,6 +283,39 @@
       }
     ],
     "name": "attest",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "schema",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "key",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "ref",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "attestToOther",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -558,6 +596,92 @@
         "type": "bytes32"
       },
       {
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      }
+    ],
+    "name": "readRawToOther",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "uid",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "schema",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "time",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "expirationTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "revocationTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "refUID",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "recipient",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "attester",
+            "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "revocable",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes",
+            "name": "data",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct Attestation",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "schema",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "key",
+        "type": "bytes32"
+      },
+      {
         "internalType": "bool",
         "name": "toDomain",
         "type": "bool"
@@ -632,6 +756,126 @@
         "internalType": "bytes32",
         "name": "node",
         "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "schema",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "key",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      }
+    ],
+    "name": "readRefToOther",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "uid",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "schema",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "time",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "expirationTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "revocationTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "refUID",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "recipient",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "attester",
+            "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "revocable",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes",
+            "name": "data",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct Attestation",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "schema",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "key",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      }
+    ],
+    "name": "readToOther",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "result",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
       }
     ],
     "name": "readVersion",
@@ -649,7 +893,7 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "",
+        "name": "node",
         "type": "bytes32"
       }
     ],
@@ -709,12 +953,40 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "schema",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "key",
         "type": "bytes32"
       },
       {
         "internalType": "address",
-        "name": "",
+        "name": "target",
+        "type": "address"
+      }
+    ],
+    "name": "revokeToOther",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "owner",
         "type": "address"
       }
     ],

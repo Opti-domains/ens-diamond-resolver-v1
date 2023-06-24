@@ -1,3 +1,7 @@
 [
-  "error UintUtils__InsufficientHexLength()"
+  {
+    "inputs": [],
+    "name": "UintUtils__InsufficientHexLength",
+    "type": "error"
+  }
 ]

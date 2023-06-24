@@ -1,14 +1,258 @@
 [
-  "error Unauthorised()",
-  "event DNSRecordChanged(bytes32 indexed,bytes,uint16,bytes)",
-  "event DNSRecordDeleted(bytes32 indexed,bytes,uint16)",
-  "event DNSZonehashChanged(bytes32 indexed,bytes,bytes)",
-  "event VersionChanged(bytes32 indexed,uint64)",
-  "function dnsRecord(bytes32,bytes32,uint16) view returns (bytes)",
-  "function dnsRecordsCount(bytes32,bytes32) view returns (uint16)",
-  "function hasDNSRecords(bytes32,bytes32) view returns (bool)",
-  "function setDNSRecords(bytes32,bytes)",
-  "function setZonehash(bytes32,bytes)",
-  "function supportsInterface(bytes4) view returns (bool)",
-  "function zonehash(bytes32) view returns (bytes)"
+  {
+    "inputs": [],
+    "name": "Unauthorised",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "name",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "resource",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "record",
+        "type": "bytes"
+      }
+    ],
+    "name": "DNSRecordChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "name",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "resource",
+        "type": "uint16"
+      }
+    ],
+    "name": "DNSRecordDeleted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "lastzonehash",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "zonehash",
+        "type": "bytes"
+      }
+    ],
+    "name": "DNSZonehashChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "newVersion",
+        "type": "uint64"
+      }
+    ],
+    "name": "VersionChanged",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "name",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint16",
+        "name": "resource",
+        "type": "uint16"
+      }
+    ],
+    "name": "dnsRecord",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "name",
+        "type": "bytes32"
+      }
+    ],
+    "name": "dnsRecordsCount",
+    "outputs": [
+      {
+        "internalType": "uint16",
+        "name": "",
+        "type": "uint16"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "name",
+        "type": "bytes32"
+      }
+    ],
+    "name": "hasDNSRecords",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "setDNSRecords",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "hash",
+        "type": "bytes"
+      }
+    ],
+    "name": "setZonehash",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4",
+        "name": "interfaceID",
+        "type": "bytes4"
+      }
+    ],
+    "name": "supportsInterface",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      }
+    ],
+    "name": "zonehash",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "result",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
 ]

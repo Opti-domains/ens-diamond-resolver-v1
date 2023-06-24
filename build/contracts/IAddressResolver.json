@@ -1,4 +1,51 @@
 [
-  "event AddressChanged(bytes32 indexed,uint256,bytes)",
-  "function addr(bytes32,uint256) view returns (bytes)"
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "coinType",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "newAddress",
+        "type": "bytes"
+      }
+    ],
+    "name": "AddressChanged",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "coinType",
+        "type": "uint256"
+      }
+    ],
+    "name": "addr",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
 ]

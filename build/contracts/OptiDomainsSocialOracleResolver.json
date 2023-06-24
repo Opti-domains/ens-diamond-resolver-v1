@@ -1,7 +1,121 @@
 [
-  "error Unauthorised()",
-  "event VersionChanged(bytes32 indexed,uint64)",
-  "function setSocialProfile(bytes32,address,string,string,bytes,bytes)",
-  "function setWalletWithVerification(bytes32,address,uint256,bytes,bytes,bytes)",
-  "function supportsInterface(bytes4) view returns (bool)"
+  {
+    "inputs": [],
+    "name": "Unauthorised",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "newVersion",
+        "type": "uint64"
+      }
+    ],
+    "name": "VersionChanged",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "contract IOptiDomainsSocialOracle",
+        "name": "oracle",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "provider",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "identity",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes",
+        "name": "proof",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "operatorSignature",
+        "type": "bytes"
+      }
+    ],
+    "name": "setSocialProfile",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "contract IOptiDomainsSocialOracle",
+        "name": "oracle",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "coinType",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "identity",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "proof",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "operatorSignature",
+        "type": "bytes"
+      }
+    ],
+    "name": "setWalletWithVerification",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4",
+        "name": "",
+        "type": "bytes4"
+      }
+    ],
+    "name": "supportsInterface",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
 ]

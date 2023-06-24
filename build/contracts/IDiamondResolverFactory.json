@@ -1,3 +1,15 @@
 [
-  "function clone(bytes32)"
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "salt",
+        "type": "bytes32"
+      }
+    ],
+    "name": "clone",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
 ]
