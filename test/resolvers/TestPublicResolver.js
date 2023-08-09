@@ -3,6 +3,7 @@ const PublicResolver = artifacts.require('DiamondResolver.sol')
 const EAS = artifacts.require('EAS.sol')
 const SchemaRegistry = artifacts.require('SchemaRegistry.sol')
 const OptiDomainsAttestationFacet = artifacts.require('OptiDomainsAttestationFacet.sol')
+const OptiDomainsAttestationFacetFix1 = artifacts.require('OptiDomainsAttestationFacetFix1.sol')
 const OptiDomainsAttestationDiamond = artifacts.require('OptiDomainsAttestationDiamond.sol')
 const NameWrapperRegistry = artifacts.require('NameWrapperRegistry.sol')
 const NameWrapper = artifacts.require('MockNameWrapper.sol')
@@ -133,6 +134,37 @@ async function deployPublicResolverFacet(_diamondResolver) {
   return await PublicResolverFacet.at(diamondResolver.address)
 }
 
+async function deployAttestationFacetFix1(_diamond, facet) {
+  const diamond = await (
+    await ethers.getContractFactory('OptiDomainsAttestationDiamond')
+  ).attach(_diamond.address)
+
+  const selectors = [
+    ethers.utils.id("revoke(bytes32,bytes32,bytes32,bool)").substring(0, 10),
+    ethers.utils.id("attest(bytes32,bytes32,bytes32,bool,bytes)").substring(0, 10),
+    ethers.utils.id("attest(bytes32,bytes32,bytes32,bytes)").substring(0, 10),
+    ethers.utils.id("attest(bytes32,bytes32,bytes)").substring(0, 10),
+    ethers.utils.id("attestToOther(bytes32,bytes32,bytes32,address,bytes)").substring(0, 10),
+    ethers.utils.id("revokeToOther(bytes32,bytes32,bytes32,address)").substring(0, 10),
+  ]
+
+  const facetCut = {
+    target: facet.address,
+    action: 1, // MODIFY
+    selectors: selectors
+  }
+
+  const tx1 = await diamond.diamondCut(
+    [facetCut],
+    "0x0000000000000000000000000000000000000000",
+    "0x",
+  )
+
+  await tx1.wait()
+
+  return await OptiDomainsAttestationFacet.at(diamond.address)
+}
+
 async function registerSchema(schemaRegistry) {
   await schemaRegistry.register("bytes32 node,uint256 contentType,bytes abi", "0x0000000000000000000000000000000000000000", true);
   await schemaRegistry.register("bytes32 node,uint256 coinType,bytes address", "0x0000000000000000000000000000000000000000", true);
@@ -170,8 +202,11 @@ contract('PublicResolver', function (accounts) {
 
     nameWrapperRegistry = await NameWrapperRegistry.new(ens.address);
     attestationFacet = await OptiDomainsAttestationFacet.new(nameWrapperRegistry.address, accounts[0]);
+    attestationFacetFix1 = await OptiDomainsAttestationFacetFix1.new(nameWrapperRegistry.address, accounts[0]);
     attestationDiamond = await OptiDomainsAttestationDiamond.new(accounts[0], attestationFacet.address);
     attestation = await OptiDomainsAttestationFacet.at(attestationDiamond.address)
+
+    await deployAttestationFacetFix1(attestationDiamond, attestationFacetFix1)
 
     await attestation.activate([[eas.address, 1, 0]])
     await nameWrapperRegistry.upgrade("0x0000000000000000000000000000000000000000", nameWrapper.address)

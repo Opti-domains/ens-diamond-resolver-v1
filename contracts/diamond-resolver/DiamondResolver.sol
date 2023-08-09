@@ -9,7 +9,6 @@ import "./facets/base/DiamondResolverBase.sol";
 import "../registry/ENS.sol";
 import "./INameWrapperRegistry.sol";
 import {IReverseRegistrar} from "../reverseRegistrar/IReverseRegistrar.sol";
-import {ReverseClaimer} from "../reverseRegistrar/ReverseClaimer.sol";
 import {INameWrapper} from "../wrapper/INameWrapper.sol";
 
 bytes4 constant supportsInterfaceSignature = 0x01ffc9a7;
